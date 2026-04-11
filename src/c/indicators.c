@@ -39,6 +39,7 @@ static void indicators_update_proc(Layer *layer, GContext *ctx) {
 
 void indicators_layer_create(Layer *root) {
   GRect bounds = layer_get_bounds(root);
+  s_bolt_path = gpath_create(&BOLT_PATH_INFO);
   s_indicators_layer = layer_create(bounds);
   layer_set_update_proc(s_indicators_layer, indicators_update_proc);
   layer_add_child(root, s_indicators_layer);
@@ -46,4 +47,5 @@ void indicators_layer_create(Layer *root) {
 
 void indicators_layer_destroy(void) {
   layer_destroy(s_indicators_layer);
+  gpath_destroy(s_bolt_path);
 }

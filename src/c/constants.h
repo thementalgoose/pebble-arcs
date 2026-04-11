@@ -30,3 +30,5 @@
 #define ARC_NW_END              340
 // 
 #define ARC_WIDTH               PBL_IF_ROUND_ELSE(14, 8)
+// 
+#define EDGE_NW                 {{8, 48}, {8, 8}, {48, 8}}
