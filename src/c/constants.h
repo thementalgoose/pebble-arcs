@@ -31,25 +31,20 @@
 #define BATTERY_BAR_INSET       6
 
 // ---------------------------------------------------------------------------
-// Themes
+// Themes — runtime color globals (set by theme_apply in pebble-quadwatch.c)
 // ---------------------------------------------------------------------------
-#define DARK_MODE  0
-#define LIGHT_MODE 1
-#define CURRENT    LIGHT_MODE
+#include <pebble.h>
+extern GColor g_color_background;
+extern GColor g_color_bar;
+extern GColor g_color_hour;
+extern GColor g_color_minute;
+extern GColor g_color_indicator;
 
-#if CURRENT == DARK_MODE
-  #define BACKGROUND_COLOR      GColorBlack
-  #define BAR_COLOR             GColorWhite
-  #define HOUR_TEXT_COLOR       GColorWhite
-  #define MINUTE_TEXT_COLOR     GColorWhite
-  #define INDICATOR_TEXT_COLOR  GColorWhite
-#elif CURRENT == LIGHT_MODE
-  #define BACKGROUND_COLOR      GColorWhite
-  #define BAR_COLOR             GColorBlack
-  #define HOUR_TEXT_COLOR       GColorBlack
-  #define MINUTE_TEXT_COLOR     GColorBlack
-  #define INDICATOR_TEXT_COLOR  GColorDarkGray
-#endif
+#define BACKGROUND_COLOR      g_color_background
+#define BAR_COLOR             g_color_bar
+#define HOUR_TEXT_COLOR       g_color_hour
+#define MINUTE_TEXT_COLOR     g_color_minute
+#define INDICATOR_TEXT_COLOR  g_color_indicator
 
 // ---------------------------------------------------------------------------
 // Utilities

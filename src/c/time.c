@@ -48,6 +48,12 @@ void time_layer_update(struct tm *t) {
   text_layer_set_text(s_minutes_layer, s_minutes_buf);
 }
 
+void time_layer_apply_theme(void) {
+  text_layer_set_text_color(s_hours_layer,   HOUR_TEXT_COLOR);
+  text_layer_set_text_color(s_minutes_layer, MINUTE_TEXT_COLOR);
+  text_layer_set_text_color(s_colon_layer,   HOUR_TEXT_COLOR);
+}
+
 void time_layer_destroy(void) {
   text_layer_destroy(s_hours_layer);
   text_layer_destroy(s_minutes_layer);

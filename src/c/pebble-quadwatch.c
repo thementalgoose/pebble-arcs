@@ -5,7 +5,47 @@
 #include "indicators.h"
 #include "time.h"
 
+// ---------------------------------------------------------------------------
+// Runtime theme color globals (declared extern in constants.h)
+// ---------------------------------------------------------------------------
+GColor g_color_background;
+GColor g_color_bar;
+GColor g_color_hour;
+GColor g_color_minute;
+GColor g_color_indicator;
+
 static Window *s_window;
+
+static void theme_apply(bool dark) {
+  persist_write_bool(MESSAGE_KEY_DarkTheme, dark);
+  if (dark) {
+    g_color_background = GColorBlack;
+    g_color_bar        = GColorWhite;
+    g_color_hour       = GColorWhite;
+    g_color_minute     = GColorWhite;
+    g_color_indicator  = GColorWhite;
+  } else {
+    g_color_background = GColorWhite;
+    g_color_bar        = GColorBlack;
+    g_color_hour       = GColorBlack;
+    g_color_minute     = GColorBlack;
+    g_color_indicator  = GColorDarkGray;
+  }
+  if (s_window && window_is_loaded(s_window)) {
+    window_set_background_color(s_window, g_color_background);
+    time_layer_apply_theme();
+    date_layer_apply_theme();
+    battery_layer_apply_theme();
+    indicators_layer_apply_theme();
+  }
+}
+
+static void inbox_received_handler(DictionaryIterator *iter, void *context) {
+  Tuple *dark_theme_t = dict_find(iter, MESSAGE_KEY_DarkTheme);
+  if (dark_theme_t) {
+    theme_apply(dark_theme_t->value->int32 != 0);
+  }
+}
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   time_layer_update(tick_time);
@@ -17,6 +57,8 @@ static void battery_handler(BatteryChargeState state) {
 }
 
 static void window_load(Window *window) {
+  window_set_background_color(window, g_color_background);
+
   Layer *root = window_get_root_layer(window);
   indicators_layer_create(root);
   date_layer_create(root);
@@ -40,8 +82,15 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
+  bool dark = persist_exists(MESSAGE_KEY_DarkTheme)
+    ? persist_read_bool(MESSAGE_KEY_DarkTheme)
+    : true;
+  theme_apply(dark);
+
+  app_message_register_inbox_received(inbox_received_handler);
+  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+
   s_window = window_create();
-  window_set_background_color(s_window, BACKGROUND_COLOR);
   window_set_window_handlers(s_window, (WindowHandlers){
     .load   = window_load,
     .unload = window_unload,

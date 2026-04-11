@@ -37,7 +37,7 @@ module.exports = [
       },
       {
         type: 'toggle',
-        messageKey: 'DARK_THEME',
+        messageKey: 'DarkTheme',
         label: 'Dark Theme',
         defaultValue: DEFAULT_DARK_THEME,
       }
@@ -56,7 +56,7 @@ module.exports = [
       },
       {
         type: 'toggle',
-        messageKey: 'BATTERY_INDICATOR',
+        messageKey: 'BatteryIndicator',
         label: 'Show battery percentage',
         defaultValue: DEFAULT_STANDALONE_BATTERY_PERCENTAGE,
       }
@@ -81,7 +81,7 @@ module.exports = [
         label: "Background Color",
       },
       {
-        type: "option",
+        type: "select",
         messageKey: "TopLeft_Option",
         defaultValue: DEFAULT_TOP_LEFT_OPTION,
         label: "Data",
@@ -103,7 +103,7 @@ module.exports = [
         label: "Background Color",
       },
       {
-        type: "option",
+        type: "select",
         messageKey: "TopRight_Option",
         defaultValue: DEFAULT_TOP_RIGHT_OPTION,
         label: "Data",
@@ -125,7 +125,7 @@ module.exports = [
         label: "Background Color",
       },
       {
-        type: "option",
+        type: "select",
         messageKey: "BottomLeft_Option",
         defaultValue: DEFAULT_BOTTOM_LEFT_OPTION,
         label: "Data",
@@ -147,7 +147,7 @@ module.exports = [
         label: "Background Color",
       },
       {
-        type: "option",
+        type: "select",
         messageKey: "BottomRight_Option",
         defaultValue: DEFAULT_BOTTOM_RIGHT_OPTION,
         label: "Data",

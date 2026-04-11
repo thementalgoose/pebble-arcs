@@ -47,6 +47,11 @@ void date_layer_update(struct tm *t) {
   text_layer_set_text(s_date_layer, s_date_buf);
 }
 
+void date_layer_apply_theme(void) {
+  text_layer_set_text_color(s_dow_layer,  INDICATOR_TEXT_COLOR);
+  text_layer_set_text_color(s_date_layer, INDICATOR_TEXT_COLOR);
+}
+
 void date_layer_destroy(void) {
   text_layer_destroy(s_dow_layer);
   text_layer_destroy(s_date_layer);

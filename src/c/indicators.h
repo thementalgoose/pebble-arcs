@@ -2,6 +2,7 @@
 #include <pebble.h>
 
 void indicators_layer_create(Layer *root);
+void indicators_layer_apply_theme(void);
 void indicators_layer_destroy(void);
 
 void indicators_set_ne(const char *text, int percent, GColor color);

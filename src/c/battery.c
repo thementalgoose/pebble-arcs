@@ -35,6 +35,10 @@ void battery_layer_set(int percent) {
   if (s_battery_layer) layer_mark_dirty(s_battery_layer);
 }
 
+void battery_layer_apply_theme(void) {
+  if (s_battery_layer) layer_mark_dirty(s_battery_layer);
+}
+
 void battery_layer_destroy(void) {
   layer_destroy(s_battery_layer);
 }

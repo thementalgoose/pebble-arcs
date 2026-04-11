@@ -144,6 +144,10 @@ void indicators_layer_create(Layer *root) {
   layer_add_child(root, s_indicators_layer);
 }
 
+void indicators_layer_apply_theme(void) {
+  if (s_indicators_layer) layer_mark_dirty(s_indicators_layer);
+}
+
 void indicators_layer_destroy(void) {
   layer_destroy(s_indicators_layer);
 }
