@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "indicators.h"
 #include "time.h"
 
 static Window *s_window;
@@ -9,6 +10,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 
 static void window_load(Window *window) {
   Layer *root = window_get_root_layer(window);
+  indicators_layer_create(root);
   time_layer_create(root);
 
   time_t now = time(NULL);
