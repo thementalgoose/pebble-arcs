@@ -9,7 +9,7 @@
 #define EDGE_LEFT               2
 #define EDGE_TOP                2
 #define EDGE_BOTTOM             2
-#define EDGE_RIGHT              2        
+#define EDGE_RIGHT              2
 // Layout - Time
 #define HOURS_FONT              fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS)
 #define HOURS_HEIGHT            42
@@ -24,6 +24,27 @@
 #define DATE_FONT               fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD)
 #define DATE_HEIGHT             18
 #define DATE_INSET              4
+
+// ---------------------------------------------------------------------------
+// Themes
+// ---------------------------------------------------------------------------
+#define DARK_MODE  0
+#define LIGHT_MODE 1
+#define CURRENT    LIGHT_MODE
+
+#if CURRENT == DARK_MODE
+  #define BACKGROUND_COLOR      GColorBlack
+  #define BAR_COLOR             GColorWhite
+  #define HOUR_TEXT_COLOR       GColorWhite
+  #define MINUTE_TEXT_COLOR     GColorWhite
+  #define INDICATOR_TEXT_COLOR  GColorWhite
+#elif CURRENT == LIGHT_MODE
+  #define BACKGROUND_COLOR      GColorWhite
+  #define BAR_COLOR             GColorBlack
+  #define HOUR_TEXT_COLOR       GColorBlack
+  #define MINUTE_TEXT_COLOR     GColorBlack
+  #define INDICATOR_TEXT_COLOR  GColorDarkGray
+#endif
 
 // ---------------------------------------------------------------------------
 // Utilities
@@ -49,7 +70,7 @@
 #define ARC_NE_END              70
 #define ARC_NW_START            290
 #define ARC_NW_END              340
-// 
+//
 #define ARC_WIDTH               PBL_IF_ROUND_ELSE(8, 8)
 #define ARC_BORDER              4
 #define ARC_EDGE                2

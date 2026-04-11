@@ -18,19 +18,21 @@ void date_layer_create(Layer *root) {
 
   // The time block occupies [cx - HOURS_HEIGHT/2 .. cx + HOURS_HEIGHT/2].
   // Place the day-of-week immediately above and the date immediately below.
-  GRect dow_frame  = GRect(0, cx - (HOURS_HEIGHT / 2) - WEEKDAY_HEIGHT + DATE_INSET + HOURS_MINS_Y_DELTA, bounds.size.w, DATE_HEIGHT);
-  GRect date_frame = GRect(0, cx + (HOURS_HEIGHT / 2) + DATE_INSET + HOURS_MINS_Y_DELTA, bounds.size.w, DATE_HEIGHT);
+  GRect dow_frame  = GRect(0, cx - (HOURS_HEIGHT / 2) - WEEKDAY_HEIGHT + DATE_INSET + HOURS_MINS_Y_DELTA,
+                           bounds.size.w, WEEKDAY_HEIGHT);
+  GRect date_frame = GRect(0, cx + (HOURS_HEIGHT / 2) + DATE_INSET + HOURS_MINS_Y_DELTA,
+                           bounds.size.w, DATE_HEIGHT);
 
   s_dow_layer = text_layer_create(dow_frame);
   text_layer_set_background_color(s_dow_layer, GColorClear);
-  text_layer_set_text_color(s_dow_layer, GColorWhite);
+  text_layer_set_text_color(s_dow_layer, INDICATOR_TEXT_COLOR);
   text_layer_set_font(s_dow_layer, WEEKDAY_FONT);
   text_layer_set_text_alignment(s_dow_layer, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_dow_layer));
 
   s_date_layer = text_layer_create(date_frame);
   text_layer_set_background_color(s_date_layer, GColorClear);
-  text_layer_set_text_color(s_date_layer, GColorWhite);
+  text_layer_set_text_color(s_date_layer, INDICATOR_TEXT_COLOR);
   text_layer_set_font(s_date_layer, DATE_FONT);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(s_date_layer));

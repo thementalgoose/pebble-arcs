@@ -37,11 +37,11 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     : DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
   graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
-  graphics_context_set_stroke_color(ctx, GColorWhite);
+  graphics_context_set_stroke_color(ctx, BAR_COLOR);
   graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
   graphics_context_set_stroke_width(ctx, ARC_WIDTH);
-  graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
   graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
   if (percent > 0) {
@@ -53,7 +53,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     }
   }
 
-  graphics_context_set_text_color(ctx, GColorWhite);
+  graphics_context_set_text_color(ctx, INDICATOR_TEXT_COLOR);
   graphics_draw_text(ctx, text, fonts_get_system_font(FONT_KEY_GOTHIC_14),
                      text_rect, GTextOverflowModeTrailingEllipsis,
                      GTextAlignmentCenter, NULL);
@@ -138,7 +138,7 @@ void indicators_set_sw(const char *text, int percent, GColor color) {
 
 void indicators_layer_create(Layer *root) {
   GRect bounds = layer_get_bounds(root);
-  s_ne_color = s_nw_color = s_se_color = s_sw_color = GColorWhite;
+  s_ne_color = s_nw_color = s_se_color = s_sw_color = BAR_COLOR;
   s_indicators_layer = layer_create(bounds);
   layer_set_update_proc(s_indicators_layer, indicators_update_proc);
   layer_add_child(root, s_indicators_layer);

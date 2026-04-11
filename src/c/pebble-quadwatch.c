@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "constants.h"
 #include "date.h"
 #include "indicators.h"
 #include "time.h"
@@ -30,7 +31,7 @@ static void window_unload(Window *window) {
 
 static void init(void) {
   s_window = window_create();
-  window_set_background_color(s_window, GColorBlack);
+  window_set_background_color(s_window, BACKGROUND_COLOR);
   window_set_window_handlers(s_window, (WindowHandlers){
     .load   = window_load,
     .unload = window_unload,
