@@ -19,11 +19,16 @@
 #define HOURS_MINS_Y_DELTA      -6
 
 // Layout - Date
-#define WEEKDAY_FONT            fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD)
-#define WEEKDAY_HEIGHT          14
+#define WEEKDAY_FONT            fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD)
+#define WEEKDAY_HEIGHT          18
 #define DATE_FONT               fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD)
 #define DATE_HEIGHT             18
 #define DATE_INSET              4
+
+// Layout - Indicators
+#define INDICATOR_FONT          fonts_get_system_font(FONT_KEY_GOTHIC_18)
+#define TEXT_W  40
+#define TEXT_H  18
 
 // Layout - Battery
 #define BATTERY_BAR_HEIGHT      2

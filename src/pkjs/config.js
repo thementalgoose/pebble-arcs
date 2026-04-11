@@ -57,7 +57,7 @@ module.exports = [
       {
         type: 'toggle',
         messageKey: 'BatteryIndicator',
-        label: 'Show battery percentage',
+        label: 'Show battery bar',
         defaultValue: DEFAULT_STANDALONE_BATTERY_PERCENTAGE,
       }
     ]

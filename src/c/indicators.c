@@ -2,19 +2,16 @@
 #include "indicators.h"
 #include "constants.h"
 
-#define TEXT_W  40
-#define TEXT_H  16
-
 static Layer *s_indicators_layer;
 
-static char   s_ne_text[8] = "12345";
-static char   s_nw_text[8] = "12345";
-static char   s_se_text[8] = "12345";
-static char   s_sw_text[8] = "12345";
-static int    s_ne_pct = 30;
-static int    s_nw_pct = 50;
-static int    s_se_pct = 70;
-static int    s_sw_pct = 90;
+static char   s_ne_text[8] = "";
+static char   s_nw_text[8] = "";
+static char   s_se_text[8] = "";
+static char   s_sw_text[8] = "";
+static int    s_ne_pct = 0;
+static int    s_nw_pct = 0;
+static int    s_se_pct = 0;
+static int    s_sw_pct = 0;
 static GColor s_ne_color;
 static GColor s_nw_color;
 static GColor s_se_color;
@@ -54,7 +51,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
   }
 
   graphics_context_set_text_color(ctx, INDICATOR_TEXT_COLOR);
-  graphics_draw_text(ctx, text, fonts_get_system_font(FONT_KEY_GOTHIC_14),
+  graphics_draw_text(ctx, text, INDICATOR_FONT,
                      text_rect, GTextOverflowModeTrailingEllipsis,
                      GTextAlignmentCenter, NULL);
 }
@@ -98,7 +95,9 @@ static void indicators_update_proc(Layer *layer, GContext *ctx) {
   uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
   GRect arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
-  draw_arc_ne(ctx, arc_rect, bounds, s_ne_text, s_ne_pct, GColorOrange);
+  // Calculate battery percentage
+
+  draw_arc_ne(ctx, arc_rect, bounds, s_ne_text, s_ne_pct, s_ne_color);
   draw_arc_nw(ctx, arc_rect, bounds, s_nw_text, s_nw_pct, GColorOxfordBlue);
   draw_arc_se(ctx, arc_rect, bounds, s_se_text, s_se_pct, GColorDarkGreen);
   draw_arc_sw(ctx, arc_rect, bounds, s_sw_text, s_sw_pct, GColorDarkCandyAppleRed);

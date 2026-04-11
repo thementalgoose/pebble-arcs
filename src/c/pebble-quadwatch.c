@@ -54,6 +54,12 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 
 static void battery_handler(BatteryChargeState state) {
   battery_layer_set(state.charge_percent);
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%d%%", state.charge_percent);
+  indicators_set_ne(buf, state.charge_percent, GColorOrange);
+  indicators_set_nw(buf, state.charge_percent, GColorOrange);
+  indicators_set_se(buf, state.charge_percent, GColorOrange);
+  indicators_set_sw(buf, state.charge_percent, GColorOrange);
 }
 
 static void window_load(Window *window) {
@@ -72,6 +78,12 @@ static void window_load(Window *window) {
 
   BatteryChargeState bat = battery_state_service_peek();
   battery_layer_set(bat.charge_percent);
+  char bat_buf[8];
+  snprintf(bat_buf, sizeof(bat_buf), "%d%%", bat.charge_percent);
+  indicators_set_ne(bat_buf, bat.charge_percent, GColorOrange);
+  indicators_set_nw(bat_buf, bat.charge_percent, GColorOrange);
+  indicators_set_se(bat_buf, bat.charge_percent, GColorOrange);
+  indicators_set_sw(bat_buf, bat.charge_percent, GColorOrange);
 }
 
 static void window_unload(Window *window) {
