@@ -12,10 +12,18 @@
 #define EDGE_RIGHT              2        
 // Layout - Time
 #define HOURS_FONT              fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS)
-#define HOURS_HEIGHT            52
+#define HOURS_HEIGHT            42
 #define MINUTES_FONT            fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS)
-#define MINUTES_HEIGHT          52
+#define MINUTES_HEIGHT          42
 #define TIME_INSET              4
+#define HOURS_MINS_Y_DELTA      -8
+
+// Layout - Date
+#define WEEKDAY_FONT            fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD)
+#define WEEKDAY_HEIGHT          14
+#define DATE_FONT               fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD)
+#define DATE_HEIGHT             18
+#define DATE_INSET              4
 
 // ---------------------------------------------------------------------------
 // Utilities
@@ -42,6 +50,5 @@
 #define ARC_NW_START            290
 #define ARC_NW_END              340
 // 
-#define ARC_WIDTH               PBL_IF_ROUND_ELSE(14, 8)
-// 
-#define EDGE_NW                 {{8, 48}, {8, 8}, {48, 8}}
+#define ARC_WIDTH               PBL_IF_ROUND_ELSE(8, 8)
+#define ARC_EDGE                2

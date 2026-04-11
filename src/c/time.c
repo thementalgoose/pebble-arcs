@@ -12,10 +12,11 @@ void time_layer_create(Layer *root) {
   GRect bounds = layer_get_bounds(root);
 
   int16_t h = bounds.size.h;
+  int16_t y_offset = (h / 2) - (HOURS_HEIGHT / 2) + HOURS_MINS_Y_DELTA;
 
-  GRect hours_frame = GRect(0, (h / 2) - (HOURS_HEIGHT / 2), (bounds.size.w / 2) - TIME_INSET, HOURS_HEIGHT);
-  GRect minutes_frame = GRect((bounds.size.w / 2) + TIME_INSET, (h / 2) - (HOURS_HEIGHT / 2), bounds.size.w / 2, MINUTES_HEIGHT);
-  GRect colon_frame = GRect(0, (h / 2) - (HOURS_HEIGHT / 2), bounds.size.w, MINUTES_HEIGHT);
+  GRect hours_frame = GRect(0, y_offset, (bounds.size.w / 2) - TIME_INSET, HOURS_HEIGHT);
+  GRect minutes_frame = GRect((bounds.size.w / 2) + TIME_INSET, y_offset, bounds.size.w / 2, MINUTES_HEIGHT);
+  GRect colon_frame = GRect(0, y_offset, bounds.size.w, MINUTES_HEIGHT);
 
   s_hours_layer = text_layer_create(hours_frame);
   text_layer_set_background_color(s_hours_layer, GColorClear);

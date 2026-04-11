@@ -91,7 +91,7 @@ static void draw_arc_sw(GContext *ctx, GRect arc_rect, GRect bounds,
 static void indicators_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   GPoint center = grect_center_point(&bounds);
-  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2);
+  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
   GRect arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
   draw_arc_ne(ctx, arc_rect, bounds, s_ne_text, s_ne_pct);
