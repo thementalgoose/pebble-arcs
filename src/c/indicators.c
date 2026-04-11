@@ -19,13 +19,18 @@ static int  s_sw_pct = 90;
 // Draws a background (dim) arc for the full span and a filled (white) arc up
 // to `percent`, plus a text label at `text_rect`.  lo_deg/hi_deg are always
 // the smaller/larger angle so the arc goes clockwise over the short path.
+// When `reversed` is true the fill grows from hi toward lo (used for NE/SW
+// so that all four arcs originate from the vertical centerline).
 static void draw_arc(GContext *ctx, GRect arc_rect,
                      int lo_deg, int hi_deg,
                      const char *text, int percent,
+                     bool reversed,
                      GRect text_rect) {
   int32_t angle_lo   = DEG_TO_TRIGANGLE(lo_deg);
   int32_t angle_hi   = DEG_TO_TRIGANGLE(hi_deg);
-  int32_t angle_fill = DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
+  int32_t angle_fill = reversed
+    ? DEG_TO_TRIGANGLE(hi_deg - (hi_deg - lo_deg) * percent / 100)
+    : DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
   graphics_context_set_stroke_width(ctx, ARC_WIDTH + 2);
   graphics_context_set_stroke_color(ctx, GColorWhite);
@@ -37,7 +42,11 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
 
   if (percent > 0) {
     graphics_context_set_stroke_color(ctx, GColorWhite);
-    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+    if (reversed) {
+      graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+    } else {
+      graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+    }
   }
 
   graphics_context_set_text_color(ctx, GColorWhite);
@@ -51,7 +60,7 @@ static void draw_arc_ne(GContext *ctx, GRect arc_rect, GRect bounds,
   GRect text_rect = GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H);
   draw_arc(ctx, arc_rect,
            MIN(ARC_NE_START, ARC_NE_END), MAX(ARC_NE_START, ARC_NE_END),
-           text, percent, text_rect);
+           text, percent, true, text_rect);
 }
 
 static void draw_arc_nw(GContext *ctx, GRect arc_rect, GRect bounds,
@@ -59,7 +68,7 @@ static void draw_arc_nw(GContext *ctx, GRect arc_rect, GRect bounds,
   GRect text_rect = GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H);
   draw_arc(ctx, arc_rect,
            MIN(ARC_NW_START, ARC_NW_END), MAX(ARC_NW_START, ARC_NW_END),
-           text, percent, text_rect);
+           text, percent, false, text_rect);
 }
 
 static void draw_arc_se(GContext *ctx, GRect arc_rect, GRect bounds,
@@ -68,7 +77,7 @@ static void draw_arc_se(GContext *ctx, GRect arc_rect, GRect bounds,
                           bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H);
   draw_arc(ctx, arc_rect,
            MIN(ARC_SE_START, ARC_SE_END), MAX(ARC_SE_START, ARC_SE_END),
-           text, percent, text_rect);
+           text, percent, false, text_rect);
 }
 
 static void draw_arc_sw(GContext *ctx, GRect arc_rect, GRect bounds,
@@ -76,7 +85,7 @@ static void draw_arc_sw(GContext *ctx, GRect arc_rect, GRect bounds,
   GRect text_rect = GRect(EDGE_LEFT, bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H);
   draw_arc(ctx, arc_rect,
            MIN(ARC_SW_START, ARC_SW_END), MAX(ARC_SW_START, ARC_SW_END),
-           text, percent, text_rect);
+           text, percent, true, text_rect);
 }
 
 static void indicators_update_proc(Layer *layer, GContext *ctx) {
