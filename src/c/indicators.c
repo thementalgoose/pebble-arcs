@@ -7,10 +7,10 @@
 
 static Layer *s_indicators_layer;
 
-static char s_ne_text[8] = "NE";
-static char s_nw_text[8] = "NW";
-static char s_se_text[8] = "SE";
-static char s_sw_text[8] = "SW";
+static char s_ne_text[8] = "12345";
+static char s_nw_text[8] = "12345";
+static char s_se_text[8] = "12345";
+static char s_sw_text[8] = "12345";
 static int  s_ne_pct = 30;
 static int  s_nw_pct = 50;
 static int  s_se_pct = 70;
@@ -27,9 +27,12 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
   int32_t angle_hi   = DEG_TO_TRIGANGLE(hi_deg);
   int32_t angle_fill = DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
-  graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+  graphics_context_set_stroke_width(ctx, ARC_WIDTH + 2);
+  graphics_context_set_stroke_color(ctx, GColorWhite);
+  graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
-  graphics_context_set_stroke_color(ctx, GColorDarkGray);
+  graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+  graphics_context_set_stroke_color(ctx, GColorBlack);
   graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
   if (percent > 0) {
