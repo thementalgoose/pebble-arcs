@@ -25,6 +25,11 @@
 #define DATE_HEIGHT             18
 #define DATE_INSET              4
 
+// Layout - Battery
+#define BATTERY_BAR_HEIGHT      2
+#define BATTERY_BAR_WIDTH       30
+#define BATTERY_BAR_INSET       6
+
 // ---------------------------------------------------------------------------
 // Themes
 // ---------------------------------------------------------------------------
