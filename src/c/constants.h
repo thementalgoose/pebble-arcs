@@ -16,7 +16,7 @@
 #define MINUTES_FONT            fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS)
 #define MINUTES_HEIGHT          42
 #define TIME_INSET              4
-#define HOURS_MINS_Y_DELTA      -8
+#define HOURS_MINS_Y_DELTA      -6
 
 // Layout - Date
 #define WEEKDAY_FONT            fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD)
