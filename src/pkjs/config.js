@@ -9,6 +9,21 @@ module.exports = [
     items: [
       {
         type: 'heading',
+        defaultValue: 'Theme',
+      },
+      {
+        type: 'toggle',
+        messageKey: 'DARK_THEME',
+        label: 'Dark Theme',
+        defaultValue: true,
+      }
+    ]
+  },
+  {
+    type: 'section',
+    items: [
+      {
+        type: 'heading',
         defaultValue: 'Standalone Battery Indicator',
       },
       {
