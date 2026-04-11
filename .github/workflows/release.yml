@@ -1,0 +1,71 @@
+name: Build and Release Pebble App
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-venv nodejs npm libsdl1.2debian libfdt1
+
+      - name: Install uv (Python package manager)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install Pebble SDK
+        run: |
+          uv tool install pebble-tool
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Download Pebble SDK
+        run: |
+          ~/.local/bin/pebble sdk install latest
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          # Get the tag name (e.g., v1.2.3 or 1.2.3)
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          # Remove 'v' prefix if present
+          VERSION="${TAG_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          # Update version in package.json using jq
+          jq --arg version "$VERSION" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          echo "Updated package.json to version $VERSION"
+          cat package.json
+
+      - name: Build Pebble app
+        run: |
+          ~/.local/bin/pebble build
+
+      - name: Upload .pbw to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: build/pebble-testchamber.pbw
+          asset_name: pebble-testchamber.pbw
+          asset_content_type: application/octet-stream

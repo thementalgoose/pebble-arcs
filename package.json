@@ -1,0 +1,36 @@
+{
+  "name": "pebble-quadwatch",
+  "author": "thementalgoose",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {
+    "@rebble/clay": "^1.0.8"
+  },
+  "pebble": {
+    "displayName": "Quad Watch",
+    "uuid": "a7c4b0d3-56b4-4449-8163-71f14b617af6",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery",
+      "flint",
+      "gabbro"
+    ],
+    "watchapp": {
+      "watchface": true
+    },
+    "messageKeys": [
+      
+    ],
+    "resources": {
+      "media": []
+    }
+  }
+}

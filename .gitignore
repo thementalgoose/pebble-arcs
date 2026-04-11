@@ -1,0 +1,7 @@
+node_modules/
+build/
+.claude/
+.lock-waf_darwin_build
+
+**/.DS_Store
+.DS_Store
