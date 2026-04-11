@@ -36,7 +36,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     ? DEG_TO_TRIGANGLE(hi_deg - (hi_deg - lo_deg) * percent / 100)
     : DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
-  graphics_context_set_stroke_width(ctx, ARC_WIDTH + 2);
+  graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
@@ -98,10 +98,10 @@ static void indicators_update_proc(Layer *layer, GContext *ctx) {
   uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
   GRect arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
-  draw_arc_ne(ctx, arc_rect, bounds, s_ne_text, s_ne_pct, s_ne_color);
-  draw_arc_nw(ctx, arc_rect, bounds, s_nw_text, s_nw_pct, s_nw_color);
-  draw_arc_se(ctx, arc_rect, bounds, s_se_text, s_se_pct, s_se_color);
-  draw_arc_sw(ctx, arc_rect, bounds, s_sw_text, s_sw_pct, s_sw_color);
+  draw_arc_ne(ctx, arc_rect, bounds, s_ne_text, s_ne_pct, GColorPastelYellow);
+  draw_arc_nw(ctx, arc_rect, bounds, s_nw_text, s_nw_pct, GColorOxfordBlue);
+  draw_arc_se(ctx, arc_rect, bounds, s_se_text, s_se_pct, GColorMintGreen);
+  draw_arc_sw(ctx, arc_rect, bounds, s_sw_text, s_sw_pct, GColorDarkCandyAppleRed);
 }
 
 // ---------------------------------------------------------------------------
