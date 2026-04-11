@@ -11,7 +11,7 @@
   },
   "pebble": {
     "displayName": "Quad Watch",
-    "uuid": "a7c4b0d3-56b4-4449-8163-71f14b617af6",
+    "uuid": "0122e256-9254-4bbd-9079-f4afd0819b1a",
     "sdkVersion": "3",
     "enableMultiJS": true,
     "targetPlatforms": [
