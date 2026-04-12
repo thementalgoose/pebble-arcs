@@ -35,6 +35,10 @@ void battery_layer_set(int percent) {
   if (s_battery_layer) layer_mark_dirty(s_battery_layer);
 }
 
+void battery_layer_set_visible(bool visible) {
+  if (s_battery_layer) layer_set_hidden(s_battery_layer, !visible);
+}
+
 void battery_layer_apply_theme(void) {
   if (s_battery_layer) layer_mark_dirty(s_battery_layer);
 }

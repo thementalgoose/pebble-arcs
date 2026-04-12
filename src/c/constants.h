@@ -28,8 +28,8 @@
 
 // Layout - Indicators
 #define INDICATOR_FONT          fonts_get_system_font(FONT_KEY_GOTHIC_18)
-#define TEXT_W  40
-#define TEXT_H  18
+#define TEXT_W                  40
+#define TEXT_H                  18
 
 // Layout - Battery
 #define BATTERY_BAR_HEIGHT      2

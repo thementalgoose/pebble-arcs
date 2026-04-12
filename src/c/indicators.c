@@ -71,14 +71,14 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds, Quadrant 
       draw_arc(ctx, arc_rect,
                MIN(ARC_SW_START, ARC_SW_END), MAX(ARC_SW_START, ARC_SW_END),
                text, percent, color, /*reversed=*/true,
-               GRect(EDGE_LEFT, bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H));
+               GRect(EDGE_LEFT, bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H));
       break;
     case QUADRANT_SE:
       draw_arc(ctx, arc_rect,
                MIN(ARC_SE_START, ARC_SE_END), MAX(ARC_SE_START, ARC_SE_END),
                text, percent, color, /*reversed=*/false,
                GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
-                     bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H));
+                     bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H));
       break;
     default:
       break;
@@ -101,7 +101,6 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
 // ---------------------------------------------------------------------------
 
 void indicators_set(Quadrant q, const char *label, int percent, GColor color) {
-  printf("Setting indicator %d: label=%s, percent=%d, color=%02x\n", q, label, percent, color.argb);
   snprintf(s_text[q], sizeof(s_text[q]), "%s", label);
   s_pct[q]   = CLAMP(percent, 0, 100);
   s_color[q] = color;

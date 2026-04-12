@@ -44,8 +44,6 @@ static GColor s_colors[QUADRANT_COUNT];
 static void render_quadrant(Quadrant q) {
   MetricResult r     = metrics_fetch((MetricOption)s_options[q]);
   GColor       color = s_colors[q];
-  printf("Rendering quadrant %d: option=%d, label=%s, percent=%d, color=%02x\n",
-         q, s_options[q], r.label, r.percent, color.argb);
   indicators_set(q, r.label, r.percent, color);
 }
 

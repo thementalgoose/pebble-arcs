@@ -89,6 +89,14 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_DarkTheme);
   if (t) theme_apply(t->value->int32 != 0);
 
+  // Standalone battery indicator
+  t = dict_find(iter, MESSAGE_KEY_BatteryIndicator);
+  if (t) {
+    bool show = t->value->int32 != 0;
+    persist_write_bool(MESSAGE_KEY_BatteryIndicator, show);
+    battery_layer_set_visible(show);
+  }
+
   // Quadrant options (Clay select fields arrive as CSTRING, e.g. "5\0\0\0")
   t = dict_find(iter, MESSAGE_KEY_TopLeft_Option);
   if (t) quadrants_set_option(QUADRANT_NW, tuple_int(t));
@@ -175,6 +183,10 @@ static void window_load(Window *window) {
   date_layer_update(t);
 
   battery_layer_set(battery_state_service_peek().charge_percent);
+  battery_layer_set_visible(
+    persist_exists(MESSAGE_KEY_BatteryIndicator)
+      ? persist_read_bool(MESSAGE_KEY_BatteryIndicator) : true
+  );
   quadrants_render_all();
 }
 
