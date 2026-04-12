@@ -1,3 +1,4 @@
+#include <pebble.h>
 #pragma once
 
 #define PEBBLE_ROUND            PBL_IF_ROUND_ELSE(true, false)
@@ -38,7 +39,7 @@
 // ---------------------------------------------------------------------------
 // Themes — runtime color globals (set by theme_apply in pebble-quadwatch.c)
 // ---------------------------------------------------------------------------
-#include <pebble.h>
+
 extern GColor g_color_background;
 extern GColor g_color_bar;
 extern GColor g_color_hour;

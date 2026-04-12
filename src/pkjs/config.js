@@ -22,6 +22,11 @@ let DEFAULT_BOTTOM_LEFT_OPTION = 7;
 let DEFAULT_BOTTOM_RIGHT_COLOUR = "ff0000";
 let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 
+let DEFAULT_STEP_GOAL = "5000";
+let DEFAULT_HEART_RATE_LOWERBOUND = "40";
+let DEFAULT_HEART_RATE_UPPERBOUND = "100";
+let DEFAULT_CALORIE_GOAL = "2000";
+
 module.exports = [
   {
     type: 'heading',
@@ -72,7 +77,11 @@ module.exports = [
     items: [
       {
         type: 'heading',
-        defaultValue: 'Quadrant - Top Left',
+        defaultValue: 'Quadrants',
+      },
+      {
+        type: 'text',
+        defaultValue: 'Top Left',
       },
       {
         type: "color",
@@ -86,15 +95,10 @@ module.exports = [
         defaultValue: DEFAULT_TOP_LEFT_OPTION,
         label: "Data",
         options: options
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
+      },
       {
-        type: 'heading',
-        defaultValue: 'Quadrant - Top Right',
+        type: 'text',
+        defaultValue: 'Top Right',
       },
       {
         type: "color",
@@ -108,15 +112,10 @@ module.exports = [
         defaultValue: DEFAULT_TOP_RIGHT_OPTION,
         label: "Data",
         options: options
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
+      },
       {
-        type: 'heading',
-        defaultValue: 'Quadrant - Bottom Left',
+        type: 'text',
+        defaultValue: 'Bottom Left',
       },
       {
         type: "color",
@@ -130,15 +129,10 @@ module.exports = [
         defaultValue: DEFAULT_BOTTOM_LEFT_OPTION,
         label: "Data",
         options: options
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
+      },
       {
-        type: 'heading',
-        defaultValue: 'Quadrant - Bottom Right',
+        type: 'text',
+        defaultValue: 'Bottom Right',
       },
       {
         type: "color",
@@ -152,6 +146,52 @@ module.exports = [
         defaultValue: DEFAULT_BOTTOM_RIGHT_OPTION,
         label: "Data",
         options: options
+      }
+    ]
+  },
+  {
+    type: 'heading',
+    defaultValue: 'Configuration',
+    size: 4,
+  },
+  {
+    type: 'section',
+    items: [
+      {
+        type: 'text',
+        defaultValue: 'Steps',
+      },
+      {
+        type: "input",
+        messageKey: "StepGoal",
+        label: "Steps Goal",
+        defaultValue: DEFAULT_STEP_GOAL,
+      },
+      {
+        type: 'text',
+        defaultValue: 'Heart Rate',
+      },
+      {
+        type: "input",
+        messageKey: "HeartRateLower",
+        label: "Heart Rate lower bound",
+        defaultValue: DEFAULT_HEART_RATE_LOWERBOUND,
+      },
+      {
+        type: "input",
+        messageKey: "HeartRateUpper",
+        label: "Heart Rate upper bound",
+        defaultValue: DEFAULT_HEART_RATE_UPPERBOUND,
+      },
+      {
+        type: 'text',
+        defaultValue: 'Calories',
+      },
+      {
+        type: "input",
+        messageKey: "CalorieGoal",
+        label: "Calorie Goal",
+        defaultValue: DEFAULT_CALORIE_GOAL,
       }
     ]
   },

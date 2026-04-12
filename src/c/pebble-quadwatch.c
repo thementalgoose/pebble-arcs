@@ -57,9 +57,56 @@ static void battery_handler(BatteryChargeState state) {
   char buf[8];
   snprintf(buf, sizeof(buf), "%d%%", state.charge_percent);
   indicators_set_ne(buf, state.charge_percent, GColorOrange);
-  indicators_set_nw(buf, state.charge_percent, GColorOrange);
-  indicators_set_se(buf, state.charge_percent, GColorOrange);
-  indicators_set_sw(buf, state.charge_percent, GColorOrange);
+}
+
+static void update_step_count(void) {
+  HealthMetric metric = HealthMetricStepCount;
+  HealthServiceAccessibilityMask mask = health_service_metric_accessible(metric, time_start_of_today(), time(NULL));
+  int steps = (mask & HealthServiceAccessibilityMaskAvailable)
+    ? (int)health_service_sum_today(metric)
+    : 0;
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%d", steps);
+  int percent = CLAMP(steps * 100 / 10000, 0, 100);
+  indicators_set_nw(buf, percent, GColorGreen);
+}
+
+static void update_heart_rate(void) {
+  HealthMetric metric = HealthMetricHeartRateBPM;
+  HealthServiceAccessibilityMask mask = health_service_metric_accessible(metric, time(NULL), time(NULL));
+  int bpm = (mask & HealthServiceAccessibilityMaskAvailable)
+    ? (int)health_service_peek_current_value(metric)
+    : 0;
+  char buf[8];
+  if (bpm > 0) {
+    snprintf(buf, sizeof(buf), "%d", bpm);
+  } else {
+    snprintf(buf, sizeof(buf), "--");
+  }
+  int percent = CLAMP(bpm * 100 / 200, 0, 100);
+  indicators_set_sw(buf, percent, GColorRed);
+}
+
+static void update_calories(void) {
+  HealthMetric metric = HealthMetricActiveKCalories;
+  HealthServiceAccessibilityMask mask = health_service_metric_accessible(metric, time_start_of_today(), time(NULL));
+  int kcal = (mask & HealthServiceAccessibilityMaskAvailable)
+    ? (int)health_service_sum_today(metric)
+    : 0;
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%d", kcal);
+  int percent = CLAMP(kcal * 100 / 600, 0, 100);
+  indicators_set_se(buf, percent, GColorYellow);
+}
+
+static void health_handler(HealthEventType event, void *context) {
+  if (event == HealthEventMovementUpdate || event == HealthEventSignificantUpdate) {
+    update_step_count();
+    update_calories();
+  }
+  if (event == HealthEventHeartRateUpdate || event == HealthEventSignificantUpdate) {
+    update_heart_rate();
+  }
 }
 
 static void window_load(Window *window) {
@@ -81,9 +128,10 @@ static void window_load(Window *window) {
   char bat_buf[8];
   snprintf(bat_buf, sizeof(bat_buf), "%d%%", bat.charge_percent);
   indicators_set_ne(bat_buf, bat.charge_percent, GColorOrange);
-  indicators_set_nw(bat_buf, bat.charge_percent, GColorOrange);
-  indicators_set_se(bat_buf, bat.charge_percent, GColorOrange);
-  indicators_set_sw(bat_buf, bat.charge_percent, GColorOrange);
+
+  update_step_count();
+  update_heart_rate();
+  update_calories();
 }
 
 static void window_unload(Window *window) {
@@ -111,11 +159,13 @@ static void init(void) {
 
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   battery_state_service_subscribe(battery_handler);
+  health_service_events_subscribe(health_handler, NULL);
 }
 
 static void deinit(void) {
   tick_timer_service_unsubscribe();
   battery_state_service_unsubscribe();
+  health_service_events_unsubscribe();
   window_destroy(s_window);
 }
 
