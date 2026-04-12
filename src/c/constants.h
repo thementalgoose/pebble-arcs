@@ -66,6 +66,15 @@ extern GColor g_color_indicator;
 #endif
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Defaults — must match DEFAULT_* values in src/pkjs/config.js
+// ---------------------------------------------------------------------------
+#define DEFAULT_ARC_COLOR_NW    GColorWhite
+#define DEFAULT_ARC_COLOR_NE    GColorWhite
+#define DEFAULT_ARC_COLOR_SW    GColorWhite
+#define DEFAULT_ARC_COLOR_SE    GColorWhite
+
+// ---------------------------------------------------------------------------
 // Layout - Complications
 // ---------------------------------------------------------------------------
 #define ARC_SE_START            110

@@ -2,6 +2,7 @@
 #include "battery.h"
 #include "constants.h"
 #include "date.h"
+#include "design.h"
 #include "indicators.h"
 #include "metrics.h"
 #include "quadrants.h"
@@ -42,6 +43,7 @@ static void theme_apply(bool dark) {
     time_layer_apply_theme();
     date_layer_apply_theme();
     battery_layer_apply_theme();
+    design_layer_apply_theme();
     indicators_layer_apply_theme();
   }
 }
@@ -172,6 +174,7 @@ static void window_load(Window *window) {
   window_set_background_color(window, g_color_background);
 
   Layer *root = window_get_root_layer(window);
+  design_layer_create(root);
   indicators_layer_create(root);
   date_layer_create(root);
   battery_layer_create(root);
@@ -194,6 +197,7 @@ static void window_unload(Window *window) {
   time_layer_destroy();
   date_layer_destroy();
   battery_layer_destroy();
+  design_layer_destroy();
   indicators_layer_destroy();
 }
 

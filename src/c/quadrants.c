@@ -2,6 +2,7 @@
 #include "quadrants.h"
 #include "metrics.h"
 #include "indicators.h"
+#include "constants.h"
 
 // ---------------------------------------------------------------------------
 // Persist key lookup (MESSAGE_KEY_* are extern consts, not compile-time constants)
@@ -28,9 +29,9 @@ static uint32_t colour_key_for(Quadrant q) {
 
 // Default options per quadrant — must match DEFAULT_* values in config.js
 static const int k_default_options[QUADRANT_COUNT] = {
-  [QUADRANT_NW] = METRIC_DAY,
-  [QUADRANT_NE] = METRIC_HEART_RATE,
-  [QUADRANT_SW] = METRIC_CALORIES,
+  [QUADRANT_NW] = METRIC_TEMPERATURE,
+  [QUADRANT_NE] = METRIC_BATTERY,
+  [QUADRANT_SW] = METRIC_DISTANCE,
   [QUADRANT_SE] = METRIC_WEEK,
 };
 
@@ -60,9 +61,17 @@ void quadrants_load(void) {
       ? option : k_default_options[q];
 
     uint32_t col_key = colour_key_for((Quadrant)q);
-    s_colors[q] = persist_exists(col_key)
-      ? ((GColor){ .argb = (uint8_t)persist_read_int(col_key) })
-      : GColorClear;
+    if (persist_exists(col_key)) {
+      s_colors[q] = (GColor){ .argb = (uint8_t)persist_read_int(col_key) };
+    } else {
+      const GColor k_default_colors[QUADRANT_COUNT] = {
+        [QUADRANT_NW] = DEFAULT_ARC_COLOR_NW,
+        [QUADRANT_NE] = DEFAULT_ARC_COLOR_NE,
+        [QUADRANT_SW] = DEFAULT_ARC_COLOR_SW,
+        [QUADRANT_SE] = DEFAULT_ARC_COLOR_SE,
+      };
+      s_colors[q] = k_default_colors[q];
+    }
   }
 }
 
