@@ -40,7 +40,6 @@ MetricResult metrics_fetch(MetricOption option) {
   MetricResult r;
   snprintf(r.label, sizeof(r.label), "--");
   r.percent = 0;
-  r.color   = g_color_indicator;
 
   switch (option) {
     case METRIC_WEEK: {
@@ -53,8 +52,11 @@ MetricResult metrics_fetch(MetricOption option) {
     case METRIC_WEEKDAY: {
       time_t now = time(NULL);
       int wday = localtime(&now)->tm_wday;
-      snprintf(r.label, sizeof(r.label), "%c", "SMTWTFS"[wday]);
-      r.percent = wday * 100 / 6;
+      static const char *day_labels[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
+      snprintf(r.label, sizeof(r.label), "%s", day_labels[wday]);
+      // Week starts Monday: Mon=1/7 ... Sat=6/7, Sun=7/7
+      int day_of_week = (wday == 0) ? 7 : wday;
+      r.percent = day_of_week * 100 / 7;
       break;
     }
     case METRIC_MONTH: {
@@ -75,7 +77,6 @@ MetricResult metrics_fetch(MetricOption option) {
       BatteryChargeState state = battery_state_service_peek();
       snprintf(r.label, sizeof(r.label), "%d%%", state.charge_percent);
       r.percent = state.charge_percent;
-      r.color   = GColorOrange;
       break;
     }
     case METRIC_HEART_RATE: {
@@ -83,14 +84,12 @@ MetricResult metrics_fetch(MetricOption option) {
       snprintf(r.label, sizeof(r.label), bpm > 0 ? "%d" : "--", bpm);
       int range = s_hr_upper - s_hr_lower;
       r.percent = (range > 0) ? CLAMP((bpm - s_hr_lower) * 100 / range, 0, 100) : 0;
-      r.color   = GColorRed;
       break;
     }
     case METRIC_STEPS: {
       int steps = health_sum_today(HealthMetricStepCount);
       snprintf(r.label, sizeof(r.label), "%d", steps);
       r.percent = (s_step_goal > 0) ? CLAMP(steps * 100 / s_step_goal, 0, 100) : 0;
-      r.color   = GColorGreen;
       break;
     }
     case METRIC_DISTANCE: {
@@ -101,20 +100,17 @@ MetricResult metrics_fetch(MetricOption option) {
         snprintf(r.label, sizeof(r.label), "%dm", meters);
       }
       r.percent = CLAMP(meters * 100 / 8000, 0, 100);
-      r.color   = GColorCyan;
       break;
     }
     case METRIC_CALORIES: {
       int kcal = health_sum_today(HealthMetricActiveKCalories);
       snprintf(r.label, sizeof(r.label), "%d", kcal);
       r.percent = (s_calorie_goal > 0) ? CLAMP(kcal * 100 / s_calorie_goal, 0, 100) : 0;
-      r.color   = GColorYellow;
       break;
     }
     case METRIC_TEMPERATURE:
     default:
       break;
   }
-  printf("Fetching metric %d: label=%s, percent=%d, color=%02x\n", option, r.label, r.percent, r.color.argb);
   return r;
 }

@@ -101,6 +101,7 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
 // ---------------------------------------------------------------------------
 
 void indicators_set(Quadrant q, const char *label, int percent, GColor color) {
+  printf("Setting indicator %d: label=%s, percent=%d, color=%02x\n", q, label, percent, color.argb);
   snprintf(s_text[q], sizeof(s_text[q]), "%s", label);
   s_pct[q]   = CLAMP(percent, 0, 100);
   s_color[q] = color;

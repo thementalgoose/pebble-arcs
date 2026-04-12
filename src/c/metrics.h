@@ -18,7 +18,6 @@ typedef enum {
 typedef struct {
   char   label[16];
   int    percent;
-  GColor color;
 } MetricResult;
 
 // Update the goals used for percentage calculations.
