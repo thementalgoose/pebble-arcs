@@ -20,12 +20,11 @@ Simple pebble watchface with metric arcs displayed in each corner
 
 ### Currently supported
 
-- [ ] Adaptive to all supported pebble sizes
-- [ ] Configure the colour of each corner
-- [ ] Configure the metric for each corner
+- [x] Adaptive to all supported pebble sizes
+- [x] Configure the colour of each corner
+- [x] Configure the metric for each corner
 - [ ] Add weather based indicators
-- [ ] Add health based indicators
-- [ ] Add health based metrics
+- [x] Add health based indicators
 
 #### Building
 
