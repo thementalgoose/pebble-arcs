@@ -1,13 +1,14 @@
 let options = [
-  { label: "Day Of Week", value: 0 },
-  { label: "Month",       value: 1 },
-  { label: "Battery",     value: 2 },
-  { label: "Heart Rate",  value: 3 },
-  { label: "Steps",       value: 4 },
-  { label: "Distance",    value: 5 },
-  { label: "Calories",    value: 6 },
-  { label: "Temperature", value: 7 },
-  { label: "Temperature", value: 7 },
+  { label: "Week of year",   value: 0 },
+  { label: "Weekday",        value: 1 },
+  { label: "Month",          value: 2 },
+  { label: "Day of month",   value: 3 },
+  { label: "Battery",        value: 4 },
+  { label: "Heart Rate",     value: 5 },
+  { label: "Steps",          value: 6 },
+  { label: "Distance",       value: 7 },
+  { label: "Calories",       value: 8 },
+  { label: "Temperature",    value: 9 },
 ];
 
 let DEFAULT_DARK_THEME = true;

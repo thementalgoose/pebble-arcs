@@ -27,7 +27,20 @@
       "watchface": true
     },
     "messageKeys": [
-      "DarkTheme"
+      "DarkTheme",
+      "BatteryIndicator",
+      "TopLeft_Option",
+      "TopLeft_Colour",
+      "TopRight_Option",
+      "TopRight_Colour",
+      "BottomLeft_Option",
+      "BottomLeft_Colour",
+      "BottomRight_Option",
+      "BottomRight_Colour",
+      "StepGoal",
+      "CalorieGoal",
+      "HeartRateLower",
+      "HeartRateUpper"
     ],
     "resources": {
       "media": []

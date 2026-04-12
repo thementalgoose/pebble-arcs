@@ -2,26 +2,19 @@
 #include "indicators.h"
 #include "constants.h"
 
-static Layer *s_indicators_layer;
+static Layer *s_layer;
+static char   s_text[QUADRANT_COUNT][8];
+static int    s_pct[QUADRANT_COUNT];
+static GColor s_color[QUADRANT_COUNT];
 
-static char   s_ne_text[8] = "";
-static char   s_nw_text[8] = "";
-static char   s_se_text[8] = "";
-static char   s_sw_text[8] = "";
-static int    s_ne_pct = 0;
-static int    s_nw_pct = 0;
-static int    s_se_pct = 0;
-static int    s_sw_pct = 0;
-static GColor s_ne_color;
-static GColor s_nw_color;
-static GColor s_se_color;
-static GColor s_sw_color;
+// ---------------------------------------------------------------------------
+// Arc drawing helpers
+// ---------------------------------------------------------------------------
 
-// Draws a background (dim) arc for the full span and a filled arc up to
-// `percent` in `color`, plus a text label at `text_rect`.  lo_deg/hi_deg are
-// always the smaller/larger angle so the arc goes clockwise over the short
-// path.  When `reversed` is true the fill grows from hi toward lo (used for
-// NE/SW so that all four arcs originate from the vertical centerline).
+// Draws a dim background arc for the full span, then a coloured fill arc up to
+// `percent`, plus a text label. `reversed` makes the fill grow from the high
+// end toward the low end (used for NE/SW so arcs originate from the vertical
+// centre-line on both sides).
 static void draw_arc(GContext *ctx, GRect arc_rect,
                      int lo_deg, int hi_deg,
                      const char *text, int percent,
@@ -56,97 +49,81 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
                      GTextAlignmentCenter, NULL);
 }
 
-static void draw_arc_ne(GContext *ctx, GRect arc_rect, GRect bounds,
-                        const char *text, int percent, GColor color) {
-  GRect text_rect = GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H);
-  draw_arc(ctx, arc_rect,
-           MIN(ARC_NE_START, ARC_NE_END), MAX(ARC_NE_START, ARC_NE_END),
-           text, percent, color, true, text_rect);
+static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds, Quadrant q) {
+  const char *text    = s_text[q];
+  int         percent = s_pct[q];
+  GColor      color   = s_color[q];
+
+  switch (q) {
+    case QUADRANT_NW:
+      draw_arc(ctx, arc_rect,
+               MIN(ARC_NW_START, ARC_NW_END), MAX(ARC_NW_START, ARC_NW_END),
+               text, percent, color, /*reversed=*/false,
+               GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H));
+      break;
+    case QUADRANT_NE:
+      draw_arc(ctx, arc_rect,
+               MIN(ARC_NE_START, ARC_NE_END), MAX(ARC_NE_START, ARC_NE_END),
+               text, percent, color, /*reversed=*/true,
+               GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H));
+      break;
+    case QUADRANT_SW:
+      draw_arc(ctx, arc_rect,
+               MIN(ARC_SW_START, ARC_SW_END), MAX(ARC_SW_START, ARC_SW_END),
+               text, percent, color, /*reversed=*/true,
+               GRect(EDGE_LEFT, bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H));
+      break;
+    case QUADRANT_SE:
+      draw_arc(ctx, arc_rect,
+               MIN(ARC_SE_START, ARC_SE_END), MAX(ARC_SE_START, ARC_SE_END),
+               text, percent, color, /*reversed=*/false,
+               GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
+                     bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H));
+      break;
+    default:
+      break;
+  }
 }
 
-static void draw_arc_nw(GContext *ctx, GRect arc_rect, GRect bounds,
-                        const char *text, int percent, GColor color) {
-  GRect text_rect = GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H);
-  draw_arc(ctx, arc_rect,
-           MIN(ARC_NW_START, ARC_NW_END), MAX(ARC_NW_START, ARC_NW_END),
-           text, percent, color, false, text_rect);
-}
-
-static void draw_arc_se(GContext *ctx, GRect arc_rect, GRect bounds,
-                        const char *text, int percent, GColor color) {
-  GRect text_rect = GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
-                          bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H);
-  draw_arc(ctx, arc_rect,
-           MIN(ARC_SE_START, ARC_SE_END), MAX(ARC_SE_START, ARC_SE_END),
-           text, percent, color, false, text_rect);
-}
-
-static void draw_arc_sw(GContext *ctx, GRect arc_rect, GRect bounds,
-                        const char *text, int percent, GColor color) {
-  GRect text_rect = GRect(EDGE_LEFT, bounds.size.h - TEXT_H - EDGE_BOTTOM, TEXT_W, TEXT_H);
-  draw_arc(ctx, arc_rect,
-           MIN(ARC_SW_START, ARC_SW_END), MAX(ARC_SW_START, ARC_SW_END),
-           text, percent, color, true, text_rect);
-}
-
-static void indicators_update_proc(Layer *layer, GContext *ctx) {
-  GRect bounds = layer_get_bounds(layer);
-  GPoint center = grect_center_point(&bounds);
+static void layer_update_proc(Layer *layer, GContext *ctx) {
+  GRect    bounds = layer_get_bounds(layer);
+  GPoint   center = grect_center_point(&bounds);
   uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
-  GRect arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
+  GRect    arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
-  // Calculate battery percentage
-
-  draw_arc_ne(ctx, arc_rect, bounds, s_ne_text, s_ne_pct, s_ne_color);
-  draw_arc_nw(ctx, arc_rect, bounds, s_nw_text, s_nw_pct, GColorOxfordBlue);
-  draw_arc_se(ctx, arc_rect, bounds, s_se_text, s_se_pct, GColorDarkGreen);
-  draw_arc_sw(ctx, arc_rect, bounds, s_sw_text, s_sw_pct, GColorDarkCandyAppleRed);
+  for (int q = 0; q < QUADRANT_COUNT; q++) {
+    draw_quadrant(ctx, arc_rect, bounds, (Quadrant)q);
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
-void indicators_set_ne(const char *text, int percent, GColor color) {
-  snprintf(s_ne_text, sizeof(s_ne_text), "%s", text);
-  s_ne_pct   = CLAMP(percent, 0, 100);
-  s_ne_color = color;
-  if (s_indicators_layer) layer_mark_dirty(s_indicators_layer);
-}
-
-void indicators_set_nw(const char *text, int percent, GColor color) {
-  snprintf(s_nw_text, sizeof(s_nw_text), "%s", text);
-  s_nw_pct   = CLAMP(percent, 0, 100);
-  s_nw_color = color;
-  if (s_indicators_layer) layer_mark_dirty(s_indicators_layer);
-}
-
-void indicators_set_se(const char *text, int percent, GColor color) {
-  snprintf(s_se_text, sizeof(s_se_text), "%s", text);
-  s_se_pct   = CLAMP(percent, 0, 100);
-  s_se_color = color;
-  if (s_indicators_layer) layer_mark_dirty(s_indicators_layer);
-}
-
-void indicators_set_sw(const char *text, int percent, GColor color) {
-  snprintf(s_sw_text, sizeof(s_sw_text), "%s", text);
-  s_sw_pct   = CLAMP(percent, 0, 100);
-  s_sw_color = color;
-  if (s_indicators_layer) layer_mark_dirty(s_indicators_layer);
+void indicators_set(Quadrant q, const char *label, int percent, GColor color) {
+  snprintf(s_text[q], sizeof(s_text[q]), "%s", label);
+  s_pct[q]   = CLAMP(percent, 0, 100);
+  s_color[q] = color;
+  if (s_layer) layer_mark_dirty(s_layer);
 }
 
 void indicators_layer_create(Layer *root) {
   GRect bounds = layer_get_bounds(root);
-  s_ne_color = s_nw_color = s_se_color = s_sw_color = BAR_COLOR;
-  s_indicators_layer = layer_create(bounds);
-  layer_set_update_proc(s_indicators_layer, indicators_update_proc);
-  layer_add_child(root, s_indicators_layer);
+  for (int q = 0; q < QUADRANT_COUNT; q++) {
+    s_text[q][0] = '\0';
+    s_pct[q]     = 0;
+    s_color[q]   = BAR_COLOR;
+  }
+  s_layer = layer_create(bounds);
+  layer_set_update_proc(s_layer, layer_update_proc);
+  layer_add_child(root, s_layer);
 }
 
 void indicators_layer_apply_theme(void) {
-  if (s_indicators_layer) layer_mark_dirty(s_indicators_layer);
+  if (s_layer) layer_mark_dirty(s_layer);
 }
 
 void indicators_layer_destroy(void) {
-  layer_destroy(s_indicators_layer);
+  layer_destroy(s_layer);
+  s_layer = NULL;
 }

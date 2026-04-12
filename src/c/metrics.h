@@ -1,0 +1,28 @@
+#pragma once
+#include <pebble.h>
+
+// Option values — must match the `options` array order in config.js
+typedef enum {
+  METRIC_WEEK        = 0,
+  METRIC_WEEKDAY     = 1,
+  METRIC_MONTH       = 2,
+  METRIC_DAY         = 3,
+  METRIC_BATTERY     = 4,
+  METRIC_HEART_RATE  = 5,
+  METRIC_STEPS       = 6,
+  METRIC_DISTANCE    = 7,
+  METRIC_CALORIES    = 8,
+  METRIC_TEMPERATURE = 9,
+} MetricOption;
+
+typedef struct {
+  char   label[16];
+  int    percent;
+  GColor color;
+} MetricResult;
+
+// Update the goals used for percentage calculations.
+void metrics_set_goals(int step_goal, int calorie_goal, int hr_lower, int hr_upper);
+
+// Fetch a fresh MetricResult for the given option.
+MetricResult metrics_fetch(MetricOption option);

@@ -3,10 +3,12 @@
 #include "constants.h"
 #include "date.h"
 #include "indicators.h"
+#include "metrics.h"
+#include "quadrants.h"
 #include "time.h"
 
 // ---------------------------------------------------------------------------
-// Runtime theme color globals (declared extern in constants.h)
+// Theme colour globals (declared extern in constants.h, used across modules)
 // ---------------------------------------------------------------------------
 GColor g_color_background;
 GColor g_color_bar;
@@ -15,6 +17,10 @@ GColor g_color_minute;
 GColor g_color_indicator;
 
 static Window *s_window;
+
+// ---------------------------------------------------------------------------
+// Theme
+// ---------------------------------------------------------------------------
 
 static void theme_apply(bool dark) {
   persist_write_bool(MESSAGE_KEY_DarkTheme, dark);
@@ -40,74 +46,119 @@ static void theme_apply(bool dark) {
   }
 }
 
-static void inbox_received_handler(DictionaryIterator *iter, void *context) {
-  Tuple *dark_theme_t = dict_find(iter, MESSAGE_KEY_DarkTheme);
-  if (dark_theme_t) {
-    theme_apply(dark_theme_t->value->int32 != 0);
-  }
+// ---------------------------------------------------------------------------
+// Goals persistence helpers
+// ---------------------------------------------------------------------------
+
+static void goals_persist(int step_goal, int calorie_goal, int hr_lower, int hr_upper) {
+  persist_write_int(MESSAGE_KEY_StepGoal,      step_goal);
+  persist_write_int(MESSAGE_KEY_CalorieGoal,   calorie_goal);
+  persist_write_int(MESSAGE_KEY_HeartRateLower, hr_lower);
+  persist_write_int(MESSAGE_KEY_HeartRateUpper, hr_upper);
+  metrics_set_goals(step_goal, calorie_goal, hr_lower, hr_upper);
 }
+
+static void goals_load(void) {
+  metrics_set_goals(
+    persist_exists(MESSAGE_KEY_StepGoal)       ? persist_read_int(MESSAGE_KEY_StepGoal)       : 5000,
+    persist_exists(MESSAGE_KEY_CalorieGoal)    ? persist_read_int(MESSAGE_KEY_CalorieGoal)    : 2000,
+    persist_exists(MESSAGE_KEY_HeartRateLower) ? persist_read_int(MESSAGE_KEY_HeartRateLower) : 40,
+    persist_exists(MESSAGE_KEY_HeartRateUpper) ? persist_read_int(MESSAGE_KEY_HeartRateUpper) : 100
+  );
+}
+
+// ---------------------------------------------------------------------------
+// App message
+// ---------------------------------------------------------------------------
+
+// Clay may send any field as CSTRING rather than INT depending on the control
+// type (select, input). Parse whichever representation actually arrived.
+static int tuple_int(const Tuple *t) {
+  return (t->type == TUPLE_CSTRING) ? atoi(t->value->cstring) : (int)t->value->int32;
+}
+
+static void inbox_received_handler(DictionaryIterator *iter, void *context) {
+  Tuple *t;
+  bool goals_changed = false;
+  int step_goal    = persist_exists(MESSAGE_KEY_StepGoal)       ? persist_read_int(MESSAGE_KEY_StepGoal)       : 5000;
+  int calorie_goal = persist_exists(MESSAGE_KEY_CalorieGoal)    ? persist_read_int(MESSAGE_KEY_CalorieGoal)    : 2000;
+  int hr_lower     = persist_exists(MESSAGE_KEY_HeartRateLower) ? persist_read_int(MESSAGE_KEY_HeartRateLower) : 40;
+  int hr_upper     = persist_exists(MESSAGE_KEY_HeartRateUpper) ? persist_read_int(MESSAGE_KEY_HeartRateUpper) : 100;
+
+  // Theme
+  t = dict_find(iter, MESSAGE_KEY_DarkTheme);
+  if (t) theme_apply(t->value->int32 != 0);
+
+  // Quadrant options (Clay select fields arrive as CSTRING, e.g. "5\0\0\0")
+  t = dict_find(iter, MESSAGE_KEY_TopLeft_Option);
+  if (t) quadrants_set_option(QUADRANT_NW, tuple_int(t));
+
+  t = dict_find(iter, MESSAGE_KEY_TopRight_Option);
+  if (t) quadrants_set_option(QUADRANT_NE, tuple_int(t));
+
+  t = dict_find(iter, MESSAGE_KEY_BottomLeft_Option);
+  if (t) quadrants_set_option(QUADRANT_SW, tuple_int(t));
+
+  t = dict_find(iter, MESSAGE_KEY_BottomRight_Option);
+  if (t) quadrants_set_option(QUADRANT_SE, tuple_int(t));
+
+  // Quadrant arc colours (Clay sends GColor8 packed as int32)
+  t = dict_find(iter, MESSAGE_KEY_TopLeft_Colour);
+  if (t) quadrants_set_color(QUADRANT_NW, (GColor){ .argb = (uint8_t)t->value->int32 });
+
+  t = dict_find(iter, MESSAGE_KEY_TopRight_Colour);
+  if (t) quadrants_set_color(QUADRANT_NE, (GColor){ .argb = (uint8_t)t->value->int32 });
+
+  t = dict_find(iter, MESSAGE_KEY_BottomLeft_Colour);
+  if (t) quadrants_set_color(QUADRANT_SW, (GColor){ .argb = (uint8_t)t->value->int32 });
+
+  t = dict_find(iter, MESSAGE_KEY_BottomRight_Colour);
+  if (t) quadrants_set_color(QUADRANT_SE, (GColor){ .argb = (uint8_t)t->value->int32 });
+
+  // Goals (Clay input fields send strings)
+  t = dict_find(iter, MESSAGE_KEY_StepGoal);
+  if (t) { step_goal    = atoi(t->value->cstring); goals_changed = true; }
+
+  t = dict_find(iter, MESSAGE_KEY_CalorieGoal);
+  if (t) { calorie_goal = atoi(t->value->cstring); goals_changed = true; }
+
+  t = dict_find(iter, MESSAGE_KEY_HeartRateLower);
+  if (t) { hr_lower     = atoi(t->value->cstring); goals_changed = true; }
+
+  t = dict_find(iter, MESSAGE_KEY_HeartRateUpper);
+  if (t) { hr_upper     = atoi(t->value->cstring); goals_changed = true; }
+
+  if (goals_changed) goals_persist(step_goal, calorie_goal, hr_lower, hr_upper);
+
+  quadrants_render_all();
+}
+
+// ---------------------------------------------------------------------------
+// Event handlers
+// ---------------------------------------------------------------------------
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   time_layer_update(tick_time);
   date_layer_update(tick_time);
+  quadrants_render_all();
 }
 
 static void battery_handler(BatteryChargeState state) {
   battery_layer_set(state.charge_percent);
-  char buf[8];
-  snprintf(buf, sizeof(buf), "%d%%", state.charge_percent);
-  indicators_set_ne(buf, state.charge_percent, GColorOrange);
-}
-
-static void update_step_count(void) {
-  HealthMetric metric = HealthMetricStepCount;
-  HealthServiceAccessibilityMask mask = health_service_metric_accessible(metric, time_start_of_today(), time(NULL));
-  int steps = (mask & HealthServiceAccessibilityMaskAvailable)
-    ? (int)health_service_sum_today(metric)
-    : 0;
-  char buf[8];
-  snprintf(buf, sizeof(buf), "%d", steps);
-  int percent = CLAMP(steps * 100 / 10000, 0, 100);
-  indicators_set_nw(buf, percent, GColorGreen);
-}
-
-static void update_heart_rate(void) {
-  HealthMetric metric = HealthMetricHeartRateBPM;
-  HealthServiceAccessibilityMask mask = health_service_metric_accessible(metric, time(NULL), time(NULL));
-  int bpm = (mask & HealthServiceAccessibilityMaskAvailable)
-    ? (int)health_service_peek_current_value(metric)
-    : 0;
-  char buf[8];
-  if (bpm > 0) {
-    snprintf(buf, sizeof(buf), "%d", bpm);
-  } else {
-    snprintf(buf, sizeof(buf), "--");
-  }
-  int percent = CLAMP(bpm * 100 / 200, 0, 100);
-  indicators_set_sw(buf, percent, GColorRed);
-}
-
-static void update_calories(void) {
-  HealthMetric metric = HealthMetricActiveKCalories;
-  HealthServiceAccessibilityMask mask = health_service_metric_accessible(metric, time_start_of_today(), time(NULL));
-  int kcal = (mask & HealthServiceAccessibilityMaskAvailable)
-    ? (int)health_service_sum_today(metric)
-    : 0;
-  char buf[8];
-  snprintf(buf, sizeof(buf), "%d", kcal);
-  int percent = CLAMP(kcal * 100 / 600, 0, 100);
-  indicators_set_se(buf, percent, GColorYellow);
+  quadrants_render_all();
 }
 
 static void health_handler(HealthEventType event, void *context) {
-  if (event == HealthEventMovementUpdate || event == HealthEventSignificantUpdate) {
-    update_step_count();
-    update_calories();
-  }
-  if (event == HealthEventHeartRateUpdate || event == HealthEventSignificantUpdate) {
-    update_heart_rate();
+  if (event == HealthEventMovementUpdate  ||
+      event == HealthEventHeartRateUpdate ||
+      event == HealthEventSignificantUpdate) {
+    quadrants_render_all();
   }
 }
+
+// ---------------------------------------------------------------------------
+// Window
+// ---------------------------------------------------------------------------
 
 static void window_load(Window *window) {
   window_set_background_color(window, g_color_background);
@@ -123,32 +174,31 @@ static void window_load(Window *window) {
   time_layer_update(t);
   date_layer_update(t);
 
-  BatteryChargeState bat = battery_state_service_peek();
-  battery_layer_set(bat.charge_percent);
-  char bat_buf[8];
-  snprintf(bat_buf, sizeof(bat_buf), "%d%%", bat.charge_percent);
-  indicators_set_ne(bat_buf, bat.charge_percent, GColorOrange);
-
-  update_step_count();
-  update_heart_rate();
-  update_calories();
+  battery_layer_set(battery_state_service_peek().charge_percent);
+  quadrants_render_all();
 }
 
 static void window_unload(Window *window) {
+  time_layer_destroy();
   date_layer_destroy();
   battery_layer_destroy();
-  time_layer_destroy();
   indicators_layer_destroy();
 }
 
+// ---------------------------------------------------------------------------
+// Init / deinit
+// ---------------------------------------------------------------------------
+
 static void init(void) {
+  quadrants_load();
+  goals_load();
+
   bool dark = persist_exists(MESSAGE_KEY_DarkTheme)
-    ? persist_read_bool(MESSAGE_KEY_DarkTheme)
-    : true;
+    ? persist_read_bool(MESSAGE_KEY_DarkTheme) : true;
   theme_apply(dark);
 
   app_message_register_inbox_received(inbox_received_handler);
-  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+  app_message_open(app_message_inbox_size_maximum(), APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
 
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers){
