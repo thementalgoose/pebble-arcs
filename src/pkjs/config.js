@@ -32,7 +32,7 @@ let DEFAULT_CALORIE_GOAL = "2000";
 module.exports = [
   {
     type: 'heading',
-    defaultValue: 'Quad Watch',
+    defaultValue: 'ARCs',
     size: 2,
   },
   {
