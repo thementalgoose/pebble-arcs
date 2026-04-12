@@ -70,108 +70,78 @@ module.exports = [
     ]
   },
   {
-    type: 'heading',
-    defaultValue: 'Indicators',
-    size: 4,
+    type: 'section',
+    items: [
+      {
+        type: 'heading',
+        defaultValue: 'Indicators',
+      },
+      {
+        type: "color",
+        messageKey: "TopLeft_Colour",
+        defaultValue: DEFAULT_TOP_LEFT_COLOUR,
+        label: "Top Left - Color",
+      },
+      {
+        type: "select",
+        messageKey: "TopLeft_Option",
+        defaultValue: DEFAULT_TOP_LEFT_OPTION,
+        label: "Top Left - Data",
+        options: options
+      },
+      {
+        type: "color",
+        messageKey: "TopRight_Colour",
+        defaultValue: DEFAULT_TOP_RIGHT_COLOUR,
+        label: "Top Right - Color",
+      },
+      {
+        type: "select",
+        messageKey: "TopRight_Option",
+        defaultValue: DEFAULT_TOP_RIGHT_OPTION,
+        label: "Top Right - Data",
+        options: options
+      },
+      {
+        type: "color",
+        messageKey: "BottomLeft_Colour",
+        defaultValue: DEFAULT_BOTTOM_LEFT_COLOUR,
+        label: "Bottom Left - Color",
+      },
+      {
+        type: "select",
+        messageKey: "BottomLeft_Option",
+        defaultValue: DEFAULT_BOTTOM_LEFT_OPTION,
+        label: "Bottom Left - Data",
+        options: options
+      },
+      {
+        type: "color",
+        messageKey: "BottomRight_Colour",
+        defaultValue: DEFAULT_BOTTOM_RIGHT_COLOUR,
+        label: "Bottom Right - Color",
+      },
+      {
+        type: "select",
+        messageKey: "BottomRight_Option",
+        defaultValue: DEFAULT_BOTTOM_RIGHT_OPTION,
+        label: "Bottom Right - Data",
+        options: options
+      }
+    ]
   },
   {
     type: 'section',
     items: [
       {
         type: 'heading',
-        defaultValue: 'Quadrants',
-      },
-      {
-        type: 'text',
-        defaultValue: 'Top Left',
-      },
-      {
-        type: "color",
-        messageKey: "TopLeft_Colour",
-        defaultValue: DEFAULT_TOP_LEFT_COLOUR,
-        label: "Background Color",
-      },
-      {
-        type: "select",
-        messageKey: "TopLeft_Option",
-        defaultValue: DEFAULT_TOP_LEFT_OPTION,
-        label: "Data",
-        options: options
-      },
-      {
-        type: 'text',
-        defaultValue: 'Top Right',
-      },
-      {
-        type: "color",
-        messageKey: "TopRight_Colour",
-        defaultValue: DEFAULT_TOP_RIGHT_COLOUR,
-        label: "Background Color",
-      },
-      {
-        type: "select",
-        messageKey: "TopRight_Option",
-        defaultValue: DEFAULT_TOP_RIGHT_OPTION,
-        label: "Data",
-        options: options
-      },
-      {
-        type: 'text',
-        defaultValue: 'Bottom Left',
-      },
-      {
-        type: "color",
-        messageKey: "BottomLeft_Colour",
-        defaultValue: DEFAULT_BOTTOM_LEFT_COLOUR,
-        label: "Background Color",
-      },
-      {
-        type: "select",
-        messageKey: "BottomLeft_Option",
-        defaultValue: DEFAULT_BOTTOM_LEFT_OPTION,
-        label: "Data",
-        options: options
-      },
-      {
-        type: 'text',
-        defaultValue: 'Bottom Right',
-      },
-      {
-        type: "color",
-        messageKey: "BottomRight_Colour",
-        defaultValue: DEFAULT_BOTTOM_RIGHT_COLOUR,
-        label: "Background Color",
-      },
-      {
-        type: "select",
-        messageKey: "BottomRight_Option",
-        defaultValue: DEFAULT_BOTTOM_RIGHT_OPTION,
-        label: "Data",
-        options: options
-      }
-    ]
-  },
-  {
-    type: 'heading',
-    defaultValue: 'Configuration',
-    size: 4,
-  },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'text',
-        defaultValue: 'Steps',
+        defaultValue: 'Configuration',
       },
       {
         type: "input",
         messageKey: "StepGoal",
         label: "Steps Goal",
         defaultValue: DEFAULT_STEP_GOAL,
-      },
-      {
-        type: 'text',
-        defaultValue: 'Heart Rate',
       },
       {
         type: "input",
@@ -184,10 +154,6 @@ module.exports = [
         messageKey: "HeartRateUpper",
         label: "Heart Rate upper bound",
         defaultValue: DEFAULT_HEART_RATE_UPPERBOUND,
-      },
-      {
-        type: 'text',
-        defaultValue: 'Calories',
       },
       {
         type: "input",
