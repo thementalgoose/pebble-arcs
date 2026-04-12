@@ -42,7 +42,12 @@ void time_layer_create(Layer *root) {
 }
 
 void time_layer_update(struct tm *t) {
-  strftime(s_hours_buf,   sizeof(s_hours_buf),   clock_is_24h_style() ? "%H" : "%I", t);
+  bool is_24h = clock_is_24h_style();
+  strftime(s_hours_buf,   sizeof(s_hours_buf),   is_24h ? "%H" : "%I", t);
+  // Strip leading zero for 12h format (e.g. "01" -> "1")
+  if (!is_24h && s_hours_buf[0] == '0') {
+    memmove(s_hours_buf, s_hours_buf + 1, sizeof(s_hours_buf) - 1);
+  }
   strftime(s_minutes_buf, sizeof(s_minutes_buf),  "%M", t);
   text_layer_set_text(s_hours_layer,   s_hours_buf);
   text_layer_set_text(s_minutes_layer, s_minutes_buf);
