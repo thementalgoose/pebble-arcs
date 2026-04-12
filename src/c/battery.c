@@ -8,6 +8,10 @@ static int    s_battery_pct = 100;
 static void battery_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   int fill_w = (s_battery_pct * bounds.size.w) / 100;
+  
+  graphics_context_set_fill_color(ctx, BAR_COLOR);
+  graphics_fill_rect(ctx, GRect(0, 0, bounds.size.w, bounds.size.h / 2), 0, GCornerNone);
+
   graphics_context_set_fill_color(ctx, BAR_COLOR);
   graphics_fill_rect(ctx, GRect(0, 0, fill_w, bounds.size.h), 0, GCornerNone);
 }
