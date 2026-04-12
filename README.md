@@ -1,4 +1,4 @@
-# Quad Watch
+# ARCs
 
 <p>
   <a href=""><img src="https://img.shields.io/static/v1?label=App%20Listing&message=%20&logoColor=white&color=833FD6&style=flat"/></a>
@@ -6,7 +6,7 @@
   <a href="https://github.com/thementalgoose/pebble-quadwatch/releases"><img src="https://img.shields.io/github/v/release/thementalgoose/pebble-quadwatch"/></a> 
 </p>
 
-Simple pebble watchface with metrics displayed in each corner
+Simple pebble watchface with metric arcs displayed in each corner
 
 | Codename | Pebble name       | Watchface                                               |
 |----------|-------------------|---------------------------------------------------------|
