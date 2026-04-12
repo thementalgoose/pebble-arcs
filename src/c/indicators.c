@@ -16,7 +16,7 @@ static GColor s_color[QUADRANT_COUNT];
 static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg) {
   int     mid_deg     = (lo_deg + hi_deg) / 2;
   int32_t angle       = DEG_TO_TRIGANGLE(mid_deg);
-  uint16_t text_r     = radius - (ARC_WIDTH / 2) - (ARC_BORDER / 2) - (TEXT_H / 2) - 2;
+  uint16_t text_r     = radius - (ARC_WIDTH / 2) - (ARC_BORDER / 2) - (TEXT_H / 2) - INDICATOR_TEXT_INSET;
   int16_t x = center.x + (int16_t)(sin_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
   int16_t y = center.y - (int16_t)(cos_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
   return GRect(x - TEXT_W / 2, y - TEXT_H / 2, TEXT_W, TEXT_H);
