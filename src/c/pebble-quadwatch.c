@@ -35,7 +35,7 @@ static void theme_apply(bool dark) {
     g_color_background = GColorWhite;
     g_color_bar        = GColorBlack;
     g_color_hour       = GColorBlack;
-    g_color_minute     = GColorBlack;
+    g_color_minute     = GColorDarkGray;
     g_color_indicator  = GColorBlack;
   }
   if (s_window && window_is_loaded(s_window)) {
