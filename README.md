@@ -23,6 +23,9 @@ Simple pebble watchface with metrics displayed in each corner
 - [ ] Adaptive to all supported pebble sizes
 - [ ] Configure the colour of each corner
 - [ ] Configure the metric for each corner
+- [ ] Add weather based indicators
+- [ ] Add health based indicators
+- [ ] Add health based metrics
 
 #### Building
 

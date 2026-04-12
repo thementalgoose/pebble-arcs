@@ -9,13 +9,14 @@ let options = [
   { label: "Distance",       value: 7 },
   { label: "Calories",       value: 8 },
   // { label: "Temperature",    value: 9 },
+  // { label: "Weather",        value: 9 },
 ];
 
 let DEFAULT_DARK_THEME = true;
 let DEFAULT_STANDALONE_BATTERY_PERCENTAGE = false;
 
 let DEFAULT_TOP_LEFT_COLOUR = "ffffff";
-let DEFAULT_TOP_LEFT_OPTION = 5;
+let DEFAULT_TOP_LEFT_OPTION = 6;
 let DEFAULT_TOP_RIGHT_COLOUR = "ffffff";
 let DEFAULT_TOP_RIGHT_OPTION = 4;
 let DEFAULT_BOTTOM_LEFT_COLOUR = "ffffff";
