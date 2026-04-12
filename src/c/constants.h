@@ -59,7 +59,7 @@
 #define BATTERY_BAR_INSET       10
 
 // ---------------------------------------------------------------------------
-// Themes — runtime color globals (set by theme_apply in pebble-quadwatch.c)
+// Themes — runtime color globals (set by theme_apply in pebble-arcs.c)
 // ---------------------------------------------------------------------------
 
 extern GColor g_color_background;
