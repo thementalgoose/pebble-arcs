@@ -110,4 +110,4 @@ extern GColor g_color_indicator;
 //
 #define ARC_WIDTH               PBL_IF_ROUND_ELSE(8, 8)
 #define ARC_BORDER              4
-#define ARC_EDGE                2
+#define ARC_EDGE                4

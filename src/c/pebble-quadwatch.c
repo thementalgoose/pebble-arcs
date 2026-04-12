@@ -36,7 +36,7 @@ static void theme_apply(bool dark) {
     g_color_bar        = GColorBlack;
     g_color_hour       = GColorBlack;
     g_color_minute     = GColorBlack;
-    g_color_indicator  = GColorDarkGray;
+    g_color_indicator  = GColorBlack;
   }
   if (s_window && window_is_loaded(s_window)) {
     window_set_background_color(s_window, g_color_background);
@@ -112,18 +112,18 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_BottomRight_Option);
   if (t) quadrants_set_option(QUADRANT_SE, tuple_int(t));
 
-  // Quadrant arc colours (Clay sends GColor8 packed as int32)
+  // Quadrant arc colours (Clay sends 24-bit RGB hex as int32, use GColorFromHEX to convert)
   t = dict_find(iter, MESSAGE_KEY_TopLeft_Colour);
-  if (t) quadrants_set_color(QUADRANT_NW, (GColor){ .argb = (uint8_t)t->value->int32 });
+  if (t) quadrants_set_color(QUADRANT_NW, GColorFromHEX(t->value->int32));
 
   t = dict_find(iter, MESSAGE_KEY_TopRight_Colour);
-  if (t) quadrants_set_color(QUADRANT_NE, (GColor){ .argb = (uint8_t)t->value->int32 });
+  if (t) quadrants_set_color(QUADRANT_NE, GColorFromHEX(t->value->int32));
 
   t = dict_find(iter, MESSAGE_KEY_BottomLeft_Colour);
-  if (t) quadrants_set_color(QUADRANT_SW, (GColor){ .argb = (uint8_t)t->value->int32 });
+  if (t) quadrants_set_color(QUADRANT_SW, GColorFromHEX(t->value->int32));
 
   t = dict_find(iter, MESSAGE_KEY_BottomRight_Colour);
-  if (t) quadrants_set_color(QUADRANT_SE, (GColor){ .argb = (uint8_t)t->value->int32 });
+  if (t) quadrants_set_color(QUADRANT_SE, GColorFromHEX(t->value->int32));
 
   // Goals (Clay input fields send strings)
   t = dict_find(iter, MESSAGE_KEY_StepGoal);
