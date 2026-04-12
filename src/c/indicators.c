@@ -11,6 +11,17 @@ static GColor s_color[QUADRANT_COUNT];
 // Arc drawing helpers
 // ---------------------------------------------------------------------------
 
+// Returns a text rect centred just inside the arc band at the arc's midpoint angle.
+// Used on round displays to place labels within the arc rather than in screen corners.
+static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg) {
+  int     mid_deg     = (lo_deg + hi_deg) / 2;
+  int32_t angle       = DEG_TO_TRIGANGLE(mid_deg);
+  uint16_t text_r     = radius - (ARC_WIDTH / 2) - (ARC_BORDER / 2) - (TEXT_H / 2) - 2;
+  int16_t x = center.x + (int16_t)(sin_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
+  int16_t y = center.y - (int16_t)(cos_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
+  return GRect(x - TEXT_W / 2, y - TEXT_H / 2, TEXT_W, TEXT_H);
+}
+
 // Draws a dim background arc for the full span, then a coloured fill arc up to
 // `percent`, plus a text label. `reversed` makes the fill grow from the high
 // end toward the low end (used for NE/SW so arcs originate from the vertical
@@ -49,37 +60,42 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
                      GTextAlignmentCenter, NULL);
 }
 
-static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds, Quadrant q) {
+static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
+                          GPoint center, uint16_t radius, Quadrant q) {
   const char *text    = s_text[q];
   int         percent = s_pct[q];
   GColor      color   = s_color[q];
 
   switch (q) {
-    case QUADRANT_NW:
-      draw_arc(ctx, arc_rect,
-               MIN(ARC_NW_START, ARC_NW_END), MAX(ARC_NW_START, ARC_NW_END),
-               text, percent, color, /*reversed=*/false,
-               GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H));
+    case QUADRANT_NW: {
+      int lo = MIN(ARC_NW_START, ARC_NW_END), hi = MAX(ARC_NW_START, ARC_NW_END);
+      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/false,
+               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
+                                 GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H)));
       break;
-    case QUADRANT_NE:
-      draw_arc(ctx, arc_rect,
-               MIN(ARC_NE_START, ARC_NE_END), MAX(ARC_NE_START, ARC_NE_END),
-               text, percent, color, /*reversed=*/true,
-               GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H));
+    }
+    case QUADRANT_NE: {
+      int lo = MIN(ARC_NE_START, ARC_NE_END), hi = MAX(ARC_NE_START, ARC_NE_END);
+      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/true,
+               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
+                                 GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H)));
       break;
-    case QUADRANT_SW:
-      draw_arc(ctx, arc_rect,
-               MIN(ARC_SW_START, ARC_SW_END), MAX(ARC_SW_START, ARC_SW_END),
-               text, percent, color, /*reversed=*/true,
-               GRect(EDGE_LEFT, bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H));
+    }
+    case QUADRANT_SW: {
+      int lo = MIN(ARC_SW_START, ARC_SW_END), hi = MAX(ARC_SW_START, ARC_SW_END);
+      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/true,
+               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
+                                 GRect(EDGE_LEFT, bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H)));
       break;
-    case QUADRANT_SE:
-      draw_arc(ctx, arc_rect,
-               MIN(ARC_SE_START, ARC_SE_END), MAX(ARC_SE_START, ARC_SE_END),
-               text, percent, color, /*reversed=*/false,
-               GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
-                     bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H));
+    }
+    case QUADRANT_SE: {
+      int lo = MIN(ARC_SE_START, ARC_SE_END), hi = MAX(ARC_SE_START, ARC_SE_END);
+      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/false,
+               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
+                                 GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
+                                       bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H)));
       break;
+    }
     default:
       break;
   }
@@ -92,7 +108,7 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
   GRect    arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
   for (int q = 0; q < QUADRANT_COUNT; q++) {
-    draw_quadrant(ctx, arc_rect, bounds, (Quadrant)q);
+    draw_quadrant(ctx, arc_rect, bounds, center, radius, (Quadrant)q);
   }
 }
 
