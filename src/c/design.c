@@ -3,6 +3,7 @@
 #include "constants.h"
 
 static Layer *s_design_layer;
+static bool   s_connected = true;
 
 // ---------------------------------------------------------------------------
 // Drawing
@@ -34,7 +35,7 @@ static void design_layer_update_proc(Layer *layer, GContext *ctx) {
 
   // draw_ellipsis(ctx, center, radius,   0);  // top
   // draw_ellipsis(ctx, center, radius,  90);  // right
-  draw_ellipsis(ctx, center, radius, 180);  // bottom
+  if (s_connected) draw_ellipsis(ctx, center, radius, 180);  // bottom
   // draw_ellipsis(ctx, center, radius, 270);  // left
 }
 
@@ -47,6 +48,11 @@ void design_layer_create(Layer *root) {
   s_design_layer = layer_create(bounds);
   layer_set_update_proc(s_design_layer, design_layer_update_proc);
   layer_add_child(root, s_design_layer);
+}
+
+void design_layer_set_connected(bool connected) {
+  s_connected = connected;
+  if (s_design_layer) layer_mark_dirty(s_design_layer);
 }
 
 void design_layer_apply_theme(void) {

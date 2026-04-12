@@ -158,6 +158,10 @@ static void battery_handler(BatteryChargeState state) {
   quadrants_render_all();
 }
 
+static void bluetooth_handler(bool connected) {
+  design_layer_set_connected(connected);
+}
+
 static void health_handler(HealthEventType event, void *context) {
   if (event == HealthEventMovementUpdate  ||
       event == HealthEventHeartRateUpdate ||
@@ -190,6 +194,7 @@ static void window_load(Window *window) {
     persist_exists(MESSAGE_KEY_BatteryIndicator)
       ? persist_read_bool(MESSAGE_KEY_BatteryIndicator) : true
   );
+  design_layer_set_connected(connection_service_peek_pebble_app_connection());
   quadrants_render_all();
 }
 
@@ -226,12 +231,14 @@ static void init(void) {
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   battery_state_service_subscribe(battery_handler);
   health_service_events_subscribe(health_handler, NULL);
+  connection_service_subscribe((ConnectionHandlers){ .pebble_app_connection_handler = bluetooth_handler });
 }
 
 static void deinit(void) {
   tick_timer_service_unsubscribe();
   battery_state_service_unsubscribe();
   health_service_events_unsubscribe();
+  connection_service_unsubscribe();
   window_destroy(s_window);
 }
 

@@ -88,13 +88,19 @@ MetricResult metrics_fetch(MetricOption option) {
     }
     case METRIC_STEPS: {
       int steps = health_sum_today(HealthMetricStepCount);
-      snprintf(r.label, sizeof(r.label), "%d", steps);
+      if (steps > 9999) {
+        snprintf(r.label, sizeof(r.label), "%dk", (steps + 500) / 1000);
+      } else {
+        snprintf(r.label, sizeof(r.label), "%d", steps);
+      }
       r.percent = (s_step_goal > 0) ? CLAMP(steps * 100 / s_step_goal, 0, 100) : 0;
       break;
     }
     case METRIC_DISTANCE: {
       int meters = health_sum_today(HealthMetricWalkedDistanceMeters);
-      if (meters >= 1000) {
+      if (meters > 9999) {
+        snprintf(r.label, sizeof(r.label), "%dk", (meters + 500) / 1000);
+      } else if (meters >= 1000) {
         snprintf(r.label, sizeof(r.label), "%d.%dk", meters / 1000, (meters % 1000) / 100);
       } else {
         snprintf(r.label, sizeof(r.label), "%dm", meters);
@@ -104,7 +110,11 @@ MetricResult metrics_fetch(MetricOption option) {
     }
     case METRIC_CALORIES: {
       int kcal = health_sum_today(HealthMetricActiveKCalories);
-      snprintf(r.label, sizeof(r.label), "%d", kcal);
+      if (kcal > 9999) {
+        snprintf(r.label, sizeof(r.label), "%dk", (kcal + 500) / 1000);
+      } else {
+        snprintf(r.label, sizeof(r.label), "%d", kcal);
+      }
       r.percent = (s_calorie_goal > 0) ? CLAMP(kcal * 100 / s_calorie_goal, 0, 100) : 0;
       break;
     }

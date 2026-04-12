@@ -69,31 +69,75 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
   switch (q) {
     case QUADRANT_NW: {
       int lo = MIN(ARC_NW_START, ARC_NW_END), hi = MAX(ARC_NW_START, ARC_NW_END);
-      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/false,
-               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
-                                 GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H)));
+      draw_arc(
+        ctx, 
+        arc_rect, 
+        lo,
+        hi, 
+        text, 
+        percent, 
+        color, 
+        /*reversed=*/false,
+        PBL_IF_ROUND_ELSE(
+          text_rect_for_arc(center, radius, lo, hi),
+          GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H)
+        )
+      );
       break;
     }
     case QUADRANT_NE: {
       int lo = MIN(ARC_NE_START, ARC_NE_END), hi = MAX(ARC_NE_START, ARC_NE_END);
-      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/true,
-               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
-                                 GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H)));
+      draw_arc(
+        ctx, 
+        arc_rect, 
+        lo,
+        hi, 
+        text, 
+        percent, 
+        color, 
+        /*reversed=*/true,
+        PBL_IF_ROUND_ELSE(
+          text_rect_for_arc(center, radius, lo, hi),
+          GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H)
+        )
+      );
       break;
     }
     case QUADRANT_SW: {
       int lo = MIN(ARC_SW_START, ARC_SW_END), hi = MAX(ARC_SW_START, ARC_SW_END);
-      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/true,
-               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
-                                 GRect(EDGE_LEFT, bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H)));
+      draw_arc(
+        ctx, 
+        arc_rect, 
+        lo,
+        hi, 
+        text, 
+        percent, 
+        color, 
+        /*reversed=*/true,
+        PBL_IF_ROUND_ELSE(
+          text_rect_for_arc(center, radius, lo, hi),
+          GRect(EDGE_LEFT, bounds.size.h - (TEXT_H + EDGE_BOTTOM + 8), TEXT_W, TEXT_H)
+        )
+      );
       break;
     }
     case QUADRANT_SE: {
       int lo = MIN(ARC_SE_START, ARC_SE_END), hi = MAX(ARC_SE_START, ARC_SE_END);
-      draw_arc(ctx, arc_rect, lo, hi, text, percent, color, /*reversed=*/false,
-               PBL_IF_ROUND_ELSE(text_rect_for_arc(center, radius, lo, hi),
-                                 GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
-                                       bounds.size.h - (TEXT_H + EDGE_BOTTOM + 6), TEXT_W, TEXT_H)));
+      draw_arc(
+        ctx, 
+        arc_rect, 
+        lo,
+        hi, 
+        text, 
+        percent, 
+        color, 
+        /*reversed=*/false,
+        PBL_IF_ROUND_ELSE(
+          text_rect_for_arc(center, radius, lo, hi),
+          GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
+                bounds.size.h - (TEXT_H + EDGE_BOTTOM + 8), TEXT_W, TEXT_H)
+        )
+      );
       break;
     }
     default:
