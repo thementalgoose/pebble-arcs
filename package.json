@@ -1,5 +1,5 @@
 {
-  "name": "pebble-quadwatch",
+  "name": "pebble-arcs",
   "author": "thementalgoose",
   "version": "1.0.0",
   "keywords": [
@@ -10,7 +10,7 @@
     "@rebble/clay": "^1.0.8"
   },
   "pebble": {
-    "displayName": "Quad Watch",
+    "displayName": "ARCs",
     "uuid": "0122e256-9254-4bbd-9079-f4afd0819b1a",
     "sdkVersion": "3",
     "enableMultiJS": true,
