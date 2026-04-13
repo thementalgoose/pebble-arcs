@@ -28,6 +28,8 @@ let DEFAULT_THIN_ARCS = true;
 
 let DEFAULT_WEATHER_UPDATE_INTERVAL = 30;
 let DEFAULT_WEATHER_USE_CELSIUS = true;
+let DEFAULT_TEMPERATURE_LOWER = "5";
+let DEFAULT_TEMPERATURE_UPPER = "35";
 
 let DEFAULT_STEP_GOAL = "5000";
 let DEFAULT_HEART_RATE_LOWERBOUND = "40";
@@ -171,6 +173,18 @@ module.exports = [
         messageKey: "CalorieGoal",
         label: "Calorie Goal",
         defaultValue: DEFAULT_CALORIE_GOAL,
+      },
+      {
+        type: "input",
+        messageKey: "TemperatureLower",
+        label: "Temperature lower bound",
+        defaultValue: DEFAULT_TEMPERATURE_LOWER,
+      },
+      {
+        type: "input",
+        messageKey: "TemperatureUpper",
+        label: "Temperature upper bound",
+        defaultValue: DEFAULT_TEMPERATURE_UPPER,
       }
     ]
   },

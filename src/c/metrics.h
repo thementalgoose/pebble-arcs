@@ -24,5 +24,8 @@ typedef struct {
 // Update the goals used for percentage calculations.
 void metrics_set_goals(int step_goal, int calorie_goal, int hr_lower, int hr_upper);
 
+// Update the temperature range used for the arc percentage.
+void metrics_set_temperature_bounds(int lower, int upper);
+
 // Fetch a fresh MetricResult for the given option.
 MetricResult metrics_fetch(MetricOption option);

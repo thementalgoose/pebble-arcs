@@ -68,6 +68,10 @@ static void goals_load(void) {
     persist_exists(MESSAGE_KEY_HeartRateLower) ? persist_read_int(MESSAGE_KEY_HeartRateLower) : 40,
     persist_exists(MESSAGE_KEY_HeartRateUpper) ? persist_read_int(MESSAGE_KEY_HeartRateUpper) : 100
   );
+  metrics_set_temperature_bounds(
+    persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
+    persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -163,6 +167,26 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   if (t) { hr_upper     = atoi(t->value->cstring); goals_changed = true; }
 
   if (goals_changed) goals_persist(step_goal, calorie_goal, hr_lower, hr_upper);
+
+  t = dict_find(iter, MESSAGE_KEY_TemperatureLower);
+  if (t) {
+    int val = atoi(t->value->cstring);
+    persist_write_int(MESSAGE_KEY_TemperatureLower, val);
+    metrics_set_temperature_bounds(
+      val,
+      persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
+    );
+  }
+
+  t = dict_find(iter, MESSAGE_KEY_TemperatureUpper);
+  if (t) {
+    int val = atoi(t->value->cstring);
+    persist_write_int(MESSAGE_KEY_TemperatureUpper, val);
+    metrics_set_temperature_bounds(
+      persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
+      val
+    );
+  }
 
   // Weather configuration from Clay
   t = dict_find(iter, MESSAGE_KEY_WeatherUseCelsius);

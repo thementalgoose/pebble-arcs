@@ -7,6 +7,13 @@ static int s_step_goal    = 5000;
 static int s_calorie_goal = 2000;
 static int s_hr_lower     = 40;
 static int s_hr_upper     = 100;
+static int s_temp_lower   = 5;
+static int s_temp_upper   = 35;
+
+void metrics_set_temperature_bounds(int lower, int upper) {
+  s_temp_lower = lower;
+  s_temp_upper = upper;
+}
 
 void metrics_set_goals(int step_goal, int calorie_goal, int hr_lower, int hr_upper) {
   s_step_goal    = step_goal;
@@ -123,11 +130,10 @@ MetricResult metrics_fetch(MetricOption option) {
       if (weather_has_data()) {
         int  temp    = weather_get_temperature();
         bool celsius = weather_get_use_celsius();
-        snprintf(r.label, sizeof(r.label), "%d%s", temp, celsius ? "C" : "F");
-        // Map to a 0-100% arc: Celsius -20..40, Fahrenheit -4..104
-        int lo = celsius ? -20 :  -4;
-        int hi = celsius ?  40 : 104;
-        r.percent = CLAMP((temp - lo) * 100 / (hi - lo), 0, 100);
+        if (!celsius) temp = temp * 9 / 5 + 32;
+        snprintf(r.label, sizeof(r.label), "%d%s", temp, celsius ? "°C" : "°F");
+        int range = s_temp_upper - s_temp_lower;
+        r.percent = (range > 0) ? CLAMP((temp - s_temp_lower) * 100 / range, 0, 100) : 0;
       } else {
         snprintf(r.label, sizeof(r.label), "--");
         r.percent = 0;

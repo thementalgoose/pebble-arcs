@@ -21,20 +21,20 @@ function xhrRequest(url, type, callback) {
 // ---------------------------------------------------------------------------
 
 function weatherCodeToCondition(code) {
-  if (code === 0)  return 'Clear';
-  if (code === 1)  return 'MClear';
-  if (code === 2)  return 'Cloudy';
-  if (code === 3)  return 'Ovrcast';
-  if (code <= 48)  return 'Fog';
-  if (code <= 55)  return 'Drizz';
-  if (code <= 57)  return 'FrzDrz';
-  if (code <= 65)  return 'Rain';
-  if (code <= 67)  return 'FrzRain';
-  if (code <= 75)  return 'Snow';
-  if (code === 77) return 'Snow';
-  if (code <= 82)  return 'Showers';
-  if (code <= 86)  return 'SnwShr';
-  return 'T-Storm';
+  if (code === 0)  return 'CLOU';  //  'Clear';
+  if (code === 1)  return 'CLR';  //  'MClear';
+  if (code === 2)  return 'CLOU'; //  'Cloudy';
+  if (code === 3)  return 'OVER';  //  'Ovrcast';
+  if (code <= 48)  return 'FOG';  //  'Fog';
+  if (code <= 55)  return 'DRZZ'; //  'Drizz';
+  if (code <= 57)  return 'DRZZ'; //  'FrzDrz';
+  if (code <= 65)  return 'RAIN'; //  'Rain';
+  if (code <= 67)  return 'RAIN'; //  'FrzRain';
+  if (code <= 75)  return 'SNOW'; //  'Snow';
+  if (code === 77) return 'SNOW'; //  'Snow';
+  if (code <= 82)  return 'RAIN'; //  'Showers';
+  if (code <= 86)  return 'SNOW'; //  'SnwShr';
+  return 'STRM';  // 'TStorm';
 }
 
 // ---------------------------------------------------------------------------
@@ -46,16 +46,13 @@ function locationError(err) {
 }
 
 function locationSuccess(pos) {
-  var settings = clay.getSettings();
-  var useCelsius = (settings.WeatherUseCelsius !== false);
-
   var url = 'https://api.open-meteo.com/v1/forecast' +
     '?latitude=' + pos.coords.latitude +
     '&longitude=' + pos.coords.longitude +
-    '&current=temperature_2m,weather_code' +
-    (useCelsius ? '' : '&temperature_unit=fahrenheit');
+    '&current=temperature_2m,weather_code';
 
   xhrRequest(url, 'GET', function(responseText) {
+    console.log('Weather response: ' + responseText);
     var json = JSON.parse(responseText);
     var temperature = Math.round(json.current.temperature_2m);
     var condition = weatherCodeToCondition(json.current.weather_code);
@@ -72,6 +69,8 @@ function locationSuccess(pos) {
 }
 
 function getWeather() {
+
+  console.log('Fetching weather...');
   navigator.geolocation.getCurrentPosition(locationSuccess, locationError,
     { timeout: 15000, maximumAge: 60000 });
 }

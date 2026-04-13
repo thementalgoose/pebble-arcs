@@ -48,7 +48,9 @@
       "WeatherCondition",
       "WeatherRequestUpdate",
       "WeatherUpdateInterval",
-      "WeatherUseCelsius"
+      "WeatherUseCelsius",
+      "TemperatureLower",
+      "TemperatureUpper"
     ],
     "resources": {
       "media": []
