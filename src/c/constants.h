@@ -108,6 +108,10 @@ extern GColor g_color_indicator;
 #define ARC_NW_START            290
 #define ARC_NW_END              340
 //
-#define ARC_WIDTH               PBL_IF_ROUND_ELSE(8, 8)
-#define ARC_BORDER              4
+#if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
+#define ARC_WIDTH               PBL_IF_ROUND_ELSE(8, 5)
+#else
+#define ARC_WIDTH               5
+#endif
+#define ARC_BORDER              3
 #define ARC_EDGE                4

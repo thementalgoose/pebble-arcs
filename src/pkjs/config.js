@@ -24,6 +24,8 @@ let DEFAULT_BOTTOM_LEFT_OPTION = 7;
 let DEFAULT_BOTTOM_RIGHT_COLOUR = "ffffff";
 let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 
+let DEFAULT_THIN_ARCS = true;
+
 let DEFAULT_STEP_GOAL = "5000";
 let DEFAULT_HEART_RATE_LOWERBOUND = "40";
 let DEFAULT_HEART_RATE_UPPERBOUND = "100";
@@ -75,6 +77,12 @@ module.exports = [
       {
         type: 'heading',
         defaultValue: 'Indicators',
+      },
+      {
+        type: 'toggle',
+        messageKey: 'ThinArcs',
+        label: 'Thin Arc style',
+        defaultValue: DEFAULT_THIN_ARCS,
       },
       {
         type: "color",
