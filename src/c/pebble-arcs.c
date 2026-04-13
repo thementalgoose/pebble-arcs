@@ -29,7 +29,7 @@ static void theme_apply(bool dark) {
     g_color_background = GColorBlack;
     g_color_bar        = GColorWhite;
     g_color_hour       = GColorWhite;
-    g_color_minute     = GColorWhite;
+    g_color_minute     = GColorLightGray;
     g_color_indicator  = GColorWhite;
   } else {
     g_color_background = GColorWhite;
