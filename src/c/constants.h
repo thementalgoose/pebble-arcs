@@ -55,7 +55,7 @@
 
 // Layout - Battery
 #define BATTERY_BAR_HEIGHT      2
-#define BATTERY_BAR_WIDTH       30
+#define BATTERY_BAR_WIDTH       20
 #define BATTERY_BAR_INSET       10
 
 // ---------------------------------------------------------------------------
@@ -114,4 +114,4 @@ extern GColor g_color_indicator;
 #define ARC_WIDTH               5
 #endif
 #define ARC_BORDER              3
-#define ARC_EDGE                4
+#define ARC_EDGE                PBL_IF_ROUND_ELSE(8,4)

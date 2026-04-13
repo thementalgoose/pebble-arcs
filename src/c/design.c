@@ -33,10 +33,10 @@ static void design_layer_update_proc(Layer *layer, GContext *ctx) {
 
   graphics_context_set_fill_color(ctx, BAR_COLOR);
 
-  // draw_ellipsis(ctx, center, radius,   0);  // top
-  // draw_ellipsis(ctx, center, radius,  90);  // right
+  // if (s_connected) draw_ellipsis(ctx, center, radius,   0);  // top
+  // if (s_connected) draw_ellipsis(ctx, center, radius,  90);  // right
   if (s_connected) draw_ellipsis(ctx, center, radius, 180);  // bottom
-  // draw_ellipsis(ctx, center, radius, 270);  // left
+  // if (s_connected) draw_ellipsis(ctx, center, radius, 270);  // left
 }
 
 // ---------------------------------------------------------------------------

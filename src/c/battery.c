@@ -21,6 +21,7 @@ void battery_layer_create(Layer *root) {
   int16_t cx = bounds.size.h / 2;
   int16_t cy = bounds.size.w / 2;
 
+  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
   int16_t bar_y = cx + (HOURS_HEIGHT / 2) + DATE_INSET + HOURS_MINS_Y_DELTA
                   + DATE_HEIGHT + BATTERY_BAR_INSET;
   GRect frame = GRect(
