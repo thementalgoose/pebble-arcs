@@ -57,7 +57,7 @@ void quadrants_load(void) {
     uint32_t opt_key = option_key_for((Quadrant)q);
     int option = persist_exists(opt_key) ? persist_read_int(opt_key) : k_default_options[q];
     // Reject stale values outside the valid option range (e.g. from a previous key layout)
-    s_options[q] = (option >= METRIC_WEEK && option <= METRIC_TEMPERATURE)
+    s_options[q] = (option >= METRIC_WEEK && option <= METRIC_WEATHER_CONDITION)
       ? option : k_default_options[q];
 
     uint32_t col_key = colour_key_for((Quadrant)q);

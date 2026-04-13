@@ -43,7 +43,15 @@
       "StepGoal",
       "CalorieGoal",
       "HeartRateLower",
-      "HeartRateUpper"
+      "HeartRateUpper",
+      "WeatherTemperature",
+      "WeatherCondition",
+      "WeatherRequestUpdate",
+      "WeatherUpdateInterval",
+      "WeatherUseCelsius",
+      "TemperatureLower",
+      "TemperatureUpper",
+      "DistanceGoal"
     ],
     "resources": {
       "media": []

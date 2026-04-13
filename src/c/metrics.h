@@ -12,7 +12,8 @@ typedef enum {
   METRIC_STEPS       = 6,
   METRIC_DISTANCE    = 7,
   METRIC_CALORIES    = 8,
-  METRIC_TEMPERATURE = 9,
+  METRIC_TEMPERATURE        = 9,
+  METRIC_WEATHER_CONDITION  = 10,
 } MetricOption;
 
 typedef struct {
@@ -22,6 +23,12 @@ typedef struct {
 
 // Update the goals used for percentage calculations.
 void metrics_set_goals(int step_goal, int calorie_goal, int hr_lower, int hr_upper);
+
+// Update the temperature range used for the arc percentage.
+void metrics_set_temperature_bounds(int lower, int upper);
+
+// Update the distance goal used for the arc percentage.
+void metrics_set_distance_goal(int goal);
 
 // Fetch a fresh MetricResult for the given option.
 MetricResult metrics_fetch(MetricOption option);

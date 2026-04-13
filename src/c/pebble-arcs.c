@@ -7,6 +7,7 @@
 #include "metrics.h"
 #include "quadrants.h"
 #include "time.h"
+#include "weather.h"
 
 // ---------------------------------------------------------------------------
 // Theme colour globals (declared extern in constants.h, used across modules)
@@ -67,6 +68,13 @@ static void goals_load(void) {
     persist_exists(MESSAGE_KEY_HeartRateLower) ? persist_read_int(MESSAGE_KEY_HeartRateLower) : 40,
     persist_exists(MESSAGE_KEY_HeartRateUpper) ? persist_read_int(MESSAGE_KEY_HeartRateUpper) : 100
   );
+  metrics_set_temperature_bounds(
+    persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
+    persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
+  );
+  metrics_set_distance_goal(
+    persist_exists(MESSAGE_KEY_DistanceGoal) ? persist_read_int(MESSAGE_KEY_DistanceGoal) : 5000
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -77,6 +85,29 @@ static void goals_load(void) {
 // type (select, input). Parse whichever representation actually arrived.
 static int tuple_int(const Tuple *t) {
   return (t->type == TUPLE_CSTRING) ? atoi(t->value->cstring) : (int)t->value->int32;
+}
+
+// Signed variant: handles int8/int16/int32 lengths for values that can be
+// negative (e.g. temperatures below 0). JS packs small integers as int8.
+static int tuple_signed_int(const Tuple *t) {
+  if (t->type == TUPLE_CSTRING) return atoi(t->value->cstring);
+  switch (t->length) {
+    case 1:  return (int)t->value->int8;
+    case 2:  return (int)t->value->int16;
+    default: return (int)t->value->int32;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Weather helpers
+// ---------------------------------------------------------------------------
+
+static void weather_request_update(void) {
+  DictionaryIterator *iter;
+  if (app_message_outbox_begin(&iter) == APP_MSG_OK) {
+    dict_write_uint8(iter, MESSAGE_KEY_WeatherRequestUpdate, 1);
+    app_message_outbox_send();
+  }
 }
 
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
@@ -140,6 +171,51 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
   if (goals_changed) goals_persist(step_goal, calorie_goal, hr_lower, hr_upper);
 
+  t = dict_find(iter, MESSAGE_KEY_TemperatureLower);
+  if (t) {
+    int val = atoi(t->value->cstring);
+    persist_write_int(MESSAGE_KEY_TemperatureLower, val);
+    metrics_set_temperature_bounds(
+      val,
+      persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
+    );
+  }
+
+  t = dict_find(iter, MESSAGE_KEY_TemperatureUpper);
+  if (t) {
+    int val = atoi(t->value->cstring);
+    persist_write_int(MESSAGE_KEY_TemperatureUpper, val);
+    metrics_set_temperature_bounds(
+      persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
+      val
+    );
+  }
+
+  t = dict_find(iter, MESSAGE_KEY_DistanceGoal);
+  if (t) {
+    int val = atoi(t->value->cstring);
+    persist_write_int(MESSAGE_KEY_DistanceGoal, val);
+    metrics_set_distance_goal(val);
+  }
+
+  // Weather configuration from Clay
+  t = dict_find(iter, MESSAGE_KEY_WeatherUseCelsius);
+  if (t) {
+    bool celsius = t->value->int32 != 0;
+    persist_write_bool(MESSAGE_KEY_WeatherUseCelsius, celsius);
+    weather_set_use_celsius(celsius);
+  }
+
+  t = dict_find(iter, MESSAGE_KEY_WeatherUpdateInterval);
+  if (t) persist_write_int(MESSAGE_KEY_WeatherUpdateInterval, tuple_int(t));
+
+  // Weather data from phone
+  t = dict_find(iter, MESSAGE_KEY_WeatherTemperature);
+  if (t) weather_set_temperature(tuple_signed_int(t));
+
+  t = dict_find(iter, MESSAGE_KEY_WeatherCondition);
+  if (t) weather_set_condition(t->value->cstring);
+
   quadrants_render_all();
 }
 
@@ -151,6 +227,13 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   time_layer_update(tick_time);
   date_layer_update(tick_time);
   quadrants_render_all();
+
+  // Request a weather update at the configured interval
+  int interval = persist_exists(MESSAGE_KEY_WeatherUpdateInterval)
+    ? persist_read_int(MESSAGE_KEY_WeatherUpdateInterval) : 30;
+  if (interval > 0 && tick_time->tm_min % interval == 0) {
+    weather_request_update();
+  }
 }
 
 static void battery_handler(BatteryChargeState state) {
@@ -214,12 +297,17 @@ static void init(void) {
   quadrants_load();
   goals_load();
 
+  // Restore persisted weather unit preference
+  if (persist_exists(MESSAGE_KEY_WeatherUseCelsius)) {
+    weather_set_use_celsius(persist_read_bool(MESSAGE_KEY_WeatherUseCelsius));
+  }
+
   bool dark = persist_exists(MESSAGE_KEY_DarkTheme)
     ? persist_read_bool(MESSAGE_KEY_DarkTheme) : true;
   theme_apply(dark);
 
   app_message_register_inbox_received(inbox_received_handler);
-  app_message_open(app_message_inbox_size_maximum(), APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers){
