@@ -12,7 +12,8 @@ typedef enum {
   METRIC_STEPS       = 6,
   METRIC_DISTANCE    = 7,
   METRIC_CALORIES    = 8,
-  METRIC_TEMPERATURE = 9,
+  METRIC_TEMPERATURE        = 9,
+  METRIC_WEATHER_CONDITION  = 10,
 } MetricOption;
 
 typedef struct {

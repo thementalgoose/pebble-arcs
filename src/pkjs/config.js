@@ -8,8 +8,8 @@ let options = [
   { label: "Steps",          value: 6 },
   { label: "Distance",       value: 7 },
   { label: "Calories",       value: 8 },
-  // { label: "Temperature",    value: 9 },
-  // { label: "Weather",        value: 9 },
+  { label: "Temperature",    value: 9 },
+  { label: "Weather",        value: 10 },
 ];
 
 let DEFAULT_DARK_THEME = true;
@@ -25,6 +25,9 @@ let DEFAULT_BOTTOM_RIGHT_COLOUR = "ffffff";
 let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 
 let DEFAULT_THIN_ARCS = true;
+
+let DEFAULT_WEATHER_UPDATE_INTERVAL = 30;
+let DEFAULT_WEATHER_USE_CELSIUS = true;
 
 let DEFAULT_STEP_GOAL = "5000";
 let DEFAULT_HEART_RATE_LOWERBOUND = "40";
@@ -169,6 +172,36 @@ module.exports = [
         label: "Calorie Goal",
         defaultValue: DEFAULT_CALORIE_GOAL,
       }
+    ]
+  },
+  {
+    type: 'section',
+    items: [
+      {
+        type: 'heading',
+        defaultValue: 'Weather',
+      },
+      {
+        type: 'text',
+        defaultValue: 'Uses GPS to fetch current weather from Open-Meteo. Select "Temperature" or "Weather" in the Indicators section to display weather data.',
+      },
+      {
+        type: 'select',
+        messageKey: 'WeatherUpdateInterval',
+        label: 'Update interval',
+        defaultValue: DEFAULT_WEATHER_UPDATE_INTERVAL,
+        options: [
+          { label: '15 minutes', value: 15 },
+          { label: '30 minutes', value: 30 },
+          { label: '60 minutes', value: 60 },
+        ],
+      },
+      {
+        type: 'toggle',
+        messageKey: 'WeatherUseCelsius',
+        label: 'Use Celsius',
+        defaultValue: DEFAULT_WEATHER_USE_CELSIUS,
+      },
     ]
   },
   {

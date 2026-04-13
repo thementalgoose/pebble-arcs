@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include "metrics.h"
 #include "constants.h"
+#include "weather.h"
 
 static int s_step_goal    = 5000;
 static int s_calorie_goal = 2000;
@@ -118,7 +119,31 @@ MetricResult metrics_fetch(MetricOption option) {
       r.percent = (s_calorie_goal > 0) ? CLAMP(kcal * 100 / s_calorie_goal, 0, 100) : 0;
       break;
     }
-    case METRIC_TEMPERATURE:
+    case METRIC_TEMPERATURE: {
+      if (weather_has_data()) {
+        int  temp    = weather_get_temperature();
+        bool celsius = weather_get_use_celsius();
+        snprintf(r.label, sizeof(r.label), "%d%s", temp, celsius ? "C" : "F");
+        // Map to a 0-100% arc: Celsius -20..40, Fahrenheit -4..104
+        int lo = celsius ? -20 :  -4;
+        int hi = celsius ?  40 : 104;
+        r.percent = CLAMP((temp - lo) * 100 / (hi - lo), 0, 100);
+      } else {
+        snprintf(r.label, sizeof(r.label), "--");
+        r.percent = 0;
+      }
+      break;
+    }
+    case METRIC_WEATHER_CONDITION: {
+      if (weather_has_data()) {
+        snprintf(r.label, sizeof(r.label), "%s", weather_get_condition());
+        r.percent = 100;
+      } else {
+        snprintf(r.label, sizeof(r.label), "--");
+        r.percent = 0;
+      }
+      break;
+    }
     default:
       break;
   }
