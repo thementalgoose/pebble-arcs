@@ -27,5 +27,8 @@ void metrics_set_goals(int step_goal, int calorie_goal, int hr_lower, int hr_upp
 // Update the temperature range used for the arc percentage.
 void metrics_set_temperature_bounds(int lower, int upper);
 
+// Update the distance goal used for the arc percentage.
+void metrics_set_distance_goal(int goal);
+
 // Fetch a fresh MetricResult for the given option.
 MetricResult metrics_fetch(MetricOption option);

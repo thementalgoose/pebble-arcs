@@ -50,7 +50,8 @@
       "WeatherUpdateInterval",
       "WeatherUseCelsius",
       "TemperatureLower",
-      "TemperatureUpper"
+      "TemperatureUpper",
+      "DistanceGoal"
     ],
     "resources": {
       "media": []

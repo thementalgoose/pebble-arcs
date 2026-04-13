@@ -21,7 +21,7 @@ function xhrRequest(url, type, callback) {
 // ---------------------------------------------------------------------------
 
 function weatherCodeToCondition(code) {
-  if (code === 0)  return 'CLOU';  //  'Clear';
+  if (code === 0)  return 'CLR';  //  'Clear';
   if (code === 1)  return 'CLR';  //  'MClear';
   if (code === 2)  return 'CLOU'; //  'Cloudy';
   if (code === 3)  return 'OVER';  //  'Ovrcast';

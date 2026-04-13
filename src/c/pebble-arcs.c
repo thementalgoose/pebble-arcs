@@ -72,6 +72,9 @@ static void goals_load(void) {
     persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
     persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
   );
+  metrics_set_distance_goal(
+    persist_exists(MESSAGE_KEY_DistanceGoal) ? persist_read_int(MESSAGE_KEY_DistanceGoal) : 5000
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -186,6 +189,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
       persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
       val
     );
+  }
+
+  t = dict_find(iter, MESSAGE_KEY_DistanceGoal);
+  if (t) {
+    int val = atoi(t->value->cstring);
+    persist_write_int(MESSAGE_KEY_DistanceGoal, val);
+    metrics_set_distance_goal(val);
   }
 
   // Weather configuration from Clay

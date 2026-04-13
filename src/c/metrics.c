@@ -7,8 +7,13 @@ static int s_step_goal    = 5000;
 static int s_calorie_goal = 2000;
 static int s_hr_lower     = 40;
 static int s_hr_upper     = 100;
-static int s_temp_lower   = 5;
-static int s_temp_upper   = 35;
+static int s_temp_lower    = 5;
+static int s_temp_upper    = 35;
+static int s_distance_goal = 5000;
+
+void metrics_set_distance_goal(int goal) {
+  s_distance_goal = goal;
+}
 
 void metrics_set_temperature_bounds(int lower, int upper) {
   s_temp_lower = lower;
@@ -113,7 +118,7 @@ MetricResult metrics_fetch(MetricOption option) {
       } else {
         snprintf(r.label, sizeof(r.label), "%dm", meters);
       }
-      r.percent = CLAMP(meters * 100 / 8000, 0, 100);
+      r.percent = (s_distance_goal > 0) ? CLAMP(meters * 100 / s_distance_goal, 0, 100) : 0;
       break;
     }
     case METRIC_CALORIES: {

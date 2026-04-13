@@ -32,6 +32,7 @@ let DEFAULT_TEMPERATURE_LOWER = "5";
 let DEFAULT_TEMPERATURE_UPPER = "35";
 
 let DEFAULT_STEP_GOAL = "5000";
+let DEFAULT_DISTANCE_GOAL = "5000";
 let DEFAULT_HEART_RATE_LOWERBOUND = "40";
 let DEFAULT_HEART_RATE_UPPERBOUND = "100";
 let DEFAULT_CALORIE_GOAL = "2000";
@@ -83,12 +84,12 @@ module.exports = [
         type: 'heading',
         defaultValue: 'Indicators',
       },
-      {
-        type: 'toggle',
-        messageKey: 'ThinArcs',
-        label: 'Thin Arc style',
-        defaultValue: DEFAULT_THIN_ARCS,
-      },
+      // {
+      //   type: 'toggle',
+      //   messageKey: 'ThinArcs',
+      //   label: 'Thin Arc style',
+      //   defaultValue: DEFAULT_THIN_ARCS,
+      // },
       {
         type: "color",
         messageKey: "TopLeft_Colour",
@@ -151,6 +152,10 @@ module.exports = [
         defaultValue: 'Configuration',
       },
       {
+        type: 'text',
+        defaultValue: 'For the relevant indicators above, set goals and bounds here',
+      },
+      {
         type: "input",
         messageKey: "StepGoal",
         label: "Steps Goal",
@@ -173,6 +178,12 @@ module.exports = [
         messageKey: "CalorieGoal",
         label: "Calorie Goal",
         defaultValue: DEFAULT_CALORIE_GOAL,
+      },
+      {
+        type: "input",
+        messageKey: "DistanceGoal",
+        label: "Distance Goal (metres)",
+        defaultValue: DEFAULT_DISTANCE_GOAL,
       },
       {
         type: "input",
