@@ -4,7 +4,7 @@
 static bool s_has_data    = false;
 static int  s_temperature = 0;
 static bool s_use_celsius = true;
-static char s_condition[8] = "--";
+static int  s_condition   = -1;
 
 bool weather_has_data(void) {
   return s_has_data;
@@ -15,9 +15,8 @@ void weather_set_temperature(int temp) {
   s_has_data    = true;
 }
 
-void weather_set_condition(const char *cond) {
-  strncpy(s_condition, cond, sizeof(s_condition) - 1);
-  s_condition[sizeof(s_condition) - 1] = '\0';
+void weather_set_condition(int cond) {
+  s_condition = cond;
 }
 
 void weather_set_use_celsius(bool celsius) {
@@ -28,7 +27,7 @@ int weather_get_temperature(void) {
   return s_temperature;
 }
 
-const char *weather_get_condition(void) {
+int weather_get_condition(void) {
   return s_condition;
 }
 

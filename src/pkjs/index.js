@@ -17,24 +17,23 @@ function xhrRequest(url, type, callback) {
 }
 
 // ---------------------------------------------------------------------------
-// WMO weather code → short condition string (max 7 chars)
+// WMO weather code → condition index (0=CLR, 1=CLOU, 2=OVER, 3=FOG,
+//                                     4=DRZZ, 5=RAIN, 6=SNOW, 7=STRM)
 // ---------------------------------------------------------------------------
 
 function weatherCodeToCondition(code) {
-  if (code === 0)  return 'CLR';  //  'Clear';
-  if (code === 1)  return 'CLR';  //  'MClear';
-  if (code === 2)  return 'CLOU'; //  'Cloudy';
-  if (code === 3)  return 'OVER';  //  'Ovrcast';
-  if (code <= 48)  return 'FOG';  //  'Fog';
-  if (code <= 55)  return 'DRZZ'; //  'Drizz';
-  if (code <= 57)  return 'DRZZ'; //  'FrzDrz';
-  if (code <= 65)  return 'RAIN'; //  'Rain';
-  if (code <= 67)  return 'RAIN'; //  'FrzRain';
-  if (code <= 75)  return 'SNOW'; //  'Snow';
-  if (code === 77) return 'SNOW'; //  'Snow';
-  if (code <= 82)  return 'RAIN'; //  'Showers';
-  if (code <= 86)  return 'SNOW'; //  'SnwShr';
-  return 'STRM';  // 'TStorm';
+  console.log(`Weather code: ${code}`);
+  if (code === 0)  return 0;  // CLR  - Clear
+  if (code === 1)  return 0;  // CLR  - Mainly Clear
+  if (code === 2)  return 1;  // CLOU - Cloudy
+  if (code === 3)  return 2;  // OVER - Overcast
+  if (code <= 48)  return 3;  // FOG  - Fog
+  if (code <= 57)  return 4;  // DRZZ - Drizzle / Freezing Drizzle
+  if (code <= 67)  return 5;  // RAIN - Rain / Freezing Rain
+  if (code <= 77)  return 6;  // SNOW - Snow
+  if (code <= 82)  return 5;  // RAIN - Showers
+  if (code <= 86)  return 6;  // SNOW - Snow Showers
+  return 7;                   // STRM - Thunderstorm
 }
 
 // ---------------------------------------------------------------------------
