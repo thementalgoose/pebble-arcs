@@ -147,8 +147,17 @@ MetricResult metrics_fetch(MetricOption option) {
     }
     case METRIC_WEATHER_CONDITION: {
       if (weather_has_data()) {
-        snprintf(r.label, sizeof(r.label), "%s", weather_get_condition());
-        r.percent = 100;
+        static const char *condition_labels[] = {
+          "CLR", "CLOU", "OVER", "FOG", "DRZZ", "RAIN", "SNOW", "STRM"
+        };
+        int cond = weather_get_condition();
+        if (cond >= 0 && cond <= 7) {
+          snprintf(r.label, sizeof(r.label), "%s", condition_labels[cond]);
+          r.percent = (7 - cond) * 100 / 7;
+        } else {
+          snprintf(r.label, sizeof(r.label), "--");
+          r.percent = 0;
+        }
       } else {
         snprintf(r.label, sizeof(r.label), "--");
         r.percent = 0;

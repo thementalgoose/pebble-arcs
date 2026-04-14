@@ -214,7 +214,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   if (t) weather_set_temperature(tuple_signed_int(t));
 
   t = dict_find(iter, MESSAGE_KEY_WeatherCondition);
-  if (t) weather_set_condition(t->value->cstring);
+  if (t) weather_set_condition((int)t->value->int32);
 
   quadrants_render_all();
 }
