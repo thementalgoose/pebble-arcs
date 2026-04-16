@@ -37,6 +37,17 @@ let DEFAULT_HEART_RATE_LOWERBOUND = "40";
 let DEFAULT_HEART_RATE_UPPERBOUND = "100";
 let DEFAULT_CALORIE_GOAL = "2000";
 
+let abbreviations = [ 
+  "CLR: Clear", 
+  "CLD: Cloudy", 
+  "OVR: Overcast", 
+  "FOG: Fog", 
+  "DRZZ: Drizzle",
+  "RAIN: Rain", 
+  "SNOW: Snow", 
+  "STRM: Storm"
+].map(x => `<br/>${x}`).toString()
+
 module.exports = [
   {
     type: 'heading',
@@ -227,6 +238,10 @@ module.exports = [
         label: 'Use Celsius',
         defaultValue: DEFAULT_WEATHER_USE_CELSIUS,
       },
+      {
+        type: 'text',
+        defaultValue: `Weather condition abbrevations${abbreviations}`,
+      }
     ]
   },
   {

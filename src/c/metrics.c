@@ -148,7 +148,7 @@ MetricResult metrics_fetch(MetricOption option) {
     case METRIC_WEATHER_CONDITION: {
       if (weather_has_data()) {
         static const char *condition_labels[] = {
-          "CLR", "CLOU", "OVER", "FOG", "DRZZ", "RAIN", "SNOW", "STRM"
+          "CLR", "CLD", "OVR", "FOG", "DRZZ", "RAIN", "SNOW", "STRM"
         };
         int cond = weather_get_condition();
         if (cond >= 0 && cond <= 7) {
