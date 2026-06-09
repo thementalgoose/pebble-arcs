@@ -2,6 +2,13 @@
 #include "indicators.h"
 #include "constants.h"
 
+// Provide a fallback message key in case build-generated message_keys
+// don't include QuietTimeIndicator yet. Build will overwrite when
+// message keys are regenerated.
+#ifndef MESSAGE_KEY_QuietTimeIndicator
+#define MESSAGE_KEY_QuietTimeIndicator 10022
+#endif
+
 static Layer *s_layer;
 static char   s_text[QUADRANT_COUNT][8];
 static int    s_pct[QUADRANT_COUNT];
@@ -156,7 +163,9 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
   }
 
   // Draw quiet-time indicators: triangles on the left and right edges
-  if (quiet_time_is_active()) {
+  bool quiet_enabled = persist_exists(MESSAGE_KEY_QuietTimeIndicator)
+    ? persist_read_bool(MESSAGE_KEY_QuietTimeIndicator) : true;
+  if (quiet_time_is_active() && quiet_enabled) {
     graphics_context_set_fill_color(ctx, INDICATOR_TEXT_COLOR);
     int16_t center_y = bounds.size.h / 2;
     int16_t tri_h = PBL_IF_ROUND_ELSE(12, 10);
