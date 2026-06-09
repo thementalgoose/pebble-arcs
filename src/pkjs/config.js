@@ -93,6 +93,25 @@ module.exports = [
     items: [
       {
         type: 'heading',
+        defaultValue: 'Quiet time indicator',
+      },
+      {
+        type: 'text',
+        defaultValue: 'Show an indicator (two triangles in the left + right of the watchface) when quiet time is enabled',
+      },
+      {
+        type: 'toggle',
+        messageKey: 'QuietTimeIndicator',
+        label: 'Show quiet-time indicator triangles',
+        defaultValue: true,
+      }
+    ]
+  },
+  {
+    type: 'section',
+    items: [
+      {
+        type: 'heading',
         defaultValue: 'Indicators',
       },
       // {
@@ -170,7 +189,7 @@ module.exports = [
         type: "input",
         messageKey: "StepGoal",
         label: "Steps Goal",
-        defaultValue: DEFAULT_STEP_GOAL,
+        defaultValue: DEFAULT_STEP_GOAL
       },
       {
         type: "input",
