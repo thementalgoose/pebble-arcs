@@ -162,26 +162,27 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     int16_t tri_h = PBL_IF_ROUND_ELSE(12, 10);
     int16_t tri_w = (tri_h * 3) / 4;
 
-    // Build triangle shapes using GPath so SDK variations are handled.
+    // Left triangle: tip at the left screen edge, base points inward
     GPoint left_points[3] = {
-      {0, 0},
-      {tri_w, -tri_h},
-      {tri_w, tri_h},
+      {tri_w, 0},
+      {0, -tri_h},
+      {0, tri_h},
     };
     GPathInfo left_info = { .num_points = 3, .points = left_points };
     GPath *left_path = gpath_create(&left_info);
-    gpath_move_to(left_path, GPoint(EDGE_LEFT + 2, center_y));
+    gpath_move_to(left_path, GPoint(0, center_y));
     gpath_draw_filled(ctx, left_path);
     gpath_destroy(left_path);
 
+    // Right triangle: tip at the right screen edge, base points inward
     GPoint right_points[3] = {
-      {0, 0},
-      {-tri_w, -tri_h},
-      {-tri_w, tri_h},
+      {-tri_w, 0},
+      {0, -tri_h},
+      {0, tri_h},
     };
     GPathInfo right_info = { .num_points = 3, .points = right_points };
     GPath *right_path = gpath_create(&right_info);
-    gpath_move_to(right_path, GPoint(bounds.size.w - (EDGE_RIGHT + 2), center_y));
+    gpath_move_to(right_path, GPoint(bounds.size.w - 1, center_y));
     gpath_draw_filled(ctx, right_path);
     gpath_destroy(right_path);
   }
