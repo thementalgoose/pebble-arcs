@@ -14,8 +14,57 @@ static bool outlined_arcs_enabled(void) {
 }
 
 static GColor fade_color(GColor color) {
-#if PBL_COLOR
-  return GColorFromRGB(color.r / 2, color.g / 2, color.b / 2);
+  #if PBL_COLOR
+  static const GColor k_light_background_colors[] = {
+    GColorCeleste,
+    GColorLightGray,
+    GColorPastelYellow,
+    GColorMintGreen,
+    GColorInchworm,
+    GColorIcterine,
+    GColorBabyBlueEyes,
+    GColorMintGreen,
+    GColorRichBrilliantLavender,
+    GColorMelon,
+  };
+
+  static const GColor k_dark_background_colors[] = {
+    GColorDarkGray,
+    GColorOxfordBlue,
+    GColorImperialPurple,
+    GColorDarkGreen,
+    GColorMidnightGreen,
+    GColorBulgarianRose,
+    GColorWindsorTan
+  };
+
+  const bool dark_theme = BACKGROUND_COLOR.argb == GColorBlack.argb;
+  const GColor *palette = dark_theme
+    ? k_dark_background_colors : k_light_background_colors;
+  size_t palette_count = dark_theme
+    ? (sizeof(k_dark_background_colors) / sizeof(k_dark_background_colors[0]))
+    : (sizeof(k_light_background_colors) / sizeof(k_light_background_colors[0]));
+
+  uint8_t target_r = color.r / (dark_theme ? 1.5 : 0.5);
+  uint8_t target_g = color.g / (dark_theme ? 1.5 : 0.5);
+  uint8_t target_b = color.b / (dark_theme ? 1.5 : 0.5);
+
+  GColor best_color = palette[0];
+  uint32_t best_distance = UINT32_MAX;
+
+  for (size_t i = 0; i < palette_count; i++) {
+    GColor candidate = palette[i];
+    uint32_t dr = (target_r > candidate.r) ? (target_r - candidate.r) : (candidate.r - target_r);
+    uint32_t dg = (target_g > candidate.g) ? (target_g - candidate.g) : (candidate.g - target_g);
+    uint32_t db = (target_b > candidate.b) ? (target_b - candidate.b) : (candidate.b - target_b);
+    uint32_t distance = dr * dr + dg * dg + db * db;
+    if (distance < best_distance) {
+      best_distance = distance;
+      best_color = candidate;
+    }
+  }
+
+  return best_color;
 #else
   return color;
 #endif
