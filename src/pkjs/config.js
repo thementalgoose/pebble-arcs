@@ -25,6 +25,7 @@ let DEFAULT_BOTTOM_RIGHT_COLOUR = "ffffff";
 let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 
 let DEFAULT_THIN_ARCS = true;
+let DEFAULT_OUTLINED_ARCS = true;
 
 let DEFAULT_WEATHER_UPDATE_INTERVAL = 30;
 let DEFAULT_WEATHER_USE_CELSIUS = true;
@@ -36,6 +37,16 @@ let DEFAULT_DISTANCE_GOAL = "5000";
 let DEFAULT_HEART_RATE_LOWERBOUND = "40";
 let DEFAULT_HEART_RATE_UPPERBOUND = "100";
 let DEFAULT_CALORIE_GOAL = "2000";
+
+let COLOR_LAYOUT = [
+  [false,    "000000", false,    "FFFFFF", false   ],
+  ["FFFF00", "AAAA00", "FFAA00", "FFAA55", "FF5500"],
+  ["FF0000", "AA0000", "FF0055", "FF55AA", "AA0055"],
+  ["FF00AA", "FF00FF", "AA00FF", "AA00AA", "FF55FF"],
+  ["5500AA", "5500FF", "0000FF", "0055AA", "00AAFF"],
+  ["00FFFF", "00AAAA", "55AAAA", "00FF00", "00AA00"],
+  ["00AA55", "55FF00", "55AA00", "55AA55", false   ]
+]
 
 let abbreviations = [ 
   "CLR: Clear", 
@@ -112,18 +123,23 @@ module.exports = [
     items: [
       {
         type: 'heading',
+        defaultValue: 'Style',
+      },
+      {
+        type: 'toggle',
+        messageKey: 'OutlinedArcs',
+        label: 'Outlined arc borders',
+        defaultValue: DEFAULT_OUTLINED_ARCS,
+      },
+      {
+        type: 'heading',
         defaultValue: 'Indicators',
       },
-      // {
-      //   type: 'toggle',
-      //   messageKey: 'ThinArcs',
-      //   label: 'Thin Arc style',
-      //   defaultValue: DEFAULT_THIN_ARCS,
-      // },
       {
         type: "color",
         messageKey: "TopLeft_Colour",
         defaultValue: DEFAULT_TOP_LEFT_COLOUR,
+        layout: COLOR_LAYOUT,
         label: "Top Left - Color",
       },
       {
@@ -137,6 +153,7 @@ module.exports = [
         type: "color",
         messageKey: "TopRight_Colour",
         defaultValue: DEFAULT_TOP_RIGHT_COLOUR,
+        layout: COLOR_LAYOUT,
         label: "Top Right - Color",
       },
       {
@@ -150,6 +167,7 @@ module.exports = [
         type: "color",
         messageKey: "BottomLeft_Colour",
         defaultValue: DEFAULT_BOTTOM_LEFT_COLOUR,
+        layout: COLOR_LAYOUT,
         label: "Bottom Left - Color",
       },
       {
@@ -163,6 +181,7 @@ module.exports = [
         type: "color",
         messageKey: "BottomRight_Colour",
         defaultValue: DEFAULT_BOTTOM_RIGHT_COLOUR,
+        layout: COLOR_LAYOUT,
         label: "Bottom Right - Color",
       },
       {

@@ -1,18 +1,74 @@
 #include <pebble.h>
+#include <message_keys.auto.h>
 #include "indicators.h"
 #include "constants.h"
-
-// Provide a fallback message key in case build-generated message_keys
-// don't include QuietTimeIndicator yet. Build will overwrite when
-// message keys are regenerated.
-#ifndef MESSAGE_KEY_QuietTimeIndicator
-#define MESSAGE_KEY_QuietTimeIndicator 10022
-#endif
 
 static Layer *s_layer;
 static char   s_text[QUADRANT_COUNT][8];
 static int    s_pct[QUADRANT_COUNT];
 static GColor s_color[QUADRANT_COUNT];
+
+static bool outlined_arcs_enabled(void) {
+  return persist_exists(MESSAGE_KEY_OutlinedArcs)
+    ? persist_read_bool(MESSAGE_KEY_OutlinedArcs) : true;
+}
+
+static GColor fade_color(GColor color) {
+  #if PBL_COLOR
+  static const GColor k_light_background_colors[] = {
+    GColorCeleste,
+    GColorLightGray,
+    GColorPastelYellow,
+    GColorMintGreen,
+    GColorInchworm,
+    GColorIcterine,
+    GColorBabyBlueEyes,
+    GColorMintGreen,
+    GColorRichBrilliantLavender,
+    GColorMelon,
+  };
+
+  static const GColor k_dark_background_colors[] = {
+    GColorDarkGray,
+    GColorOxfordBlue,
+    GColorImperialPurple,
+    GColorDarkGreen,
+    GColorMidnightGreen,
+    GColorBulgarianRose,
+    GColorWindsorTan
+  };
+
+  const bool dark_theme = BACKGROUND_COLOR.argb == GColorBlack.argb;
+  const GColor *palette = dark_theme
+    ? k_dark_background_colors : k_light_background_colors;
+  size_t palette_count = dark_theme
+    ? (sizeof(k_dark_background_colors) / sizeof(k_dark_background_colors[0]))
+    : (sizeof(k_light_background_colors) / sizeof(k_light_background_colors[0]));
+
+  uint8_t target_r = color.r / (dark_theme ? 1.5 : 0.5);
+  uint8_t target_g = color.g / (dark_theme ? 1.5 : 0.5);
+  uint8_t target_b = color.b / (dark_theme ? 1.5 : 0.5);
+
+  GColor best_color = palette[0];
+  uint32_t best_distance = UINT32_MAX;
+
+  for (size_t i = 0; i < palette_count; i++) {
+    GColor candidate = palette[i];
+    uint32_t dr = (target_r > candidate.r) ? (target_r - candidate.r) : (candidate.r - target_r);
+    uint32_t dg = (target_g > candidate.g) ? (target_g - candidate.g) : (candidate.g - target_g);
+    uint32_t db = (target_b > candidate.b) ? (target_b - candidate.b) : (candidate.b - target_b);
+    uint32_t distance = dr * dr + dg * dg + db * db;
+    if (distance < best_distance) {
+      best_distance = distance;
+      best_color = candidate;
+    }
+  }
+
+  return best_color;
+#else
+  return color;
+#endif
+}
 
 // ---------------------------------------------------------------------------
 // Arc drawing helpers
@@ -44,20 +100,35 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     ? DEG_TO_TRIGANGLE(hi_deg - (hi_deg - lo_deg) * percent / 100)
     : DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
-  graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
-  graphics_context_set_stroke_color(ctx, BAR_COLOR);
-  graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+  if (outlined_arcs_enabled()) {
+    graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
+    graphics_context_set_stroke_color(ctx, BAR_COLOR);
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
-  graphics_context_set_stroke_width(ctx, ARC_WIDTH);
-  graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
-  graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+    graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+    graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
-  if (percent > 0) {
-    graphics_context_set_stroke_color(ctx, color);
-    if (reversed) {
-      graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
-    } else {
-      graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+    if (percent > 0) {
+      graphics_context_set_stroke_color(ctx, color);
+      if (reversed) {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+      } else {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+      }
+    }
+  } else {
+    graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+    graphics_context_set_stroke_color(ctx, fade_color(color));
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+
+    if (percent > 0) {
+      graphics_context_set_stroke_color(ctx, color);
+      if (reversed) {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+      } else {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+      }
     }
   }
 
