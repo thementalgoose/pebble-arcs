@@ -32,6 +32,8 @@
     "messageKeys": [
       "DarkTheme",
       "BatteryIndicator",
+      "QuietTimeIndicator",
+      "OutlinedArcs",
       "TopLeft_Option",
       "TopLeft_Colour",
       "TopRight_Option",

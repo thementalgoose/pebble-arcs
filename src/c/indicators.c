@@ -1,18 +1,25 @@
 #include <pebble.h>
+#include <message_keys.auto.h>
 #include "indicators.h"
 #include "constants.h"
-
-// Provide a fallback message key in case build-generated message_keys
-// don't include QuietTimeIndicator yet. Build will overwrite when
-// message keys are regenerated.
-#ifndef MESSAGE_KEY_QuietTimeIndicator
-#define MESSAGE_KEY_QuietTimeIndicator 10022
-#endif
 
 static Layer *s_layer;
 static char   s_text[QUADRANT_COUNT][8];
 static int    s_pct[QUADRANT_COUNT];
 static GColor s_color[QUADRANT_COUNT];
+
+static bool outlined_arcs_enabled(void) {
+  return persist_exists(MESSAGE_KEY_OutlinedArcs)
+    ? persist_read_bool(MESSAGE_KEY_OutlinedArcs) : true;
+}
+
+static GColor fade_color(GColor color) {
+#if PBL_COLOR
+  return GColorFromRGB(color.r / 2, color.g / 2, color.b / 2);
+#else
+  return color;
+#endif
+}
 
 // ---------------------------------------------------------------------------
 // Arc drawing helpers
@@ -44,20 +51,35 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     ? DEG_TO_TRIGANGLE(hi_deg - (hi_deg - lo_deg) * percent / 100)
     : DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
-  graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
-  graphics_context_set_stroke_color(ctx, BAR_COLOR);
-  graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+  if (outlined_arcs_enabled()) {
+    graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
+    graphics_context_set_stroke_color(ctx, BAR_COLOR);
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
-  graphics_context_set_stroke_width(ctx, ARC_WIDTH);
-  graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
-  graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+    graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+    graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
-  if (percent > 0) {
-    graphics_context_set_stroke_color(ctx, color);
-    if (reversed) {
-      graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
-    } else {
-      graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+    if (percent > 0) {
+      graphics_context_set_stroke_color(ctx, color);
+      if (reversed) {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+      } else {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+      }
+    }
+  } else {
+    graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+    graphics_context_set_stroke_color(ctx, fade_color(color));
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+
+    if (percent > 0) {
+      graphics_context_set_stroke_color(ctx, color);
+      if (reversed) {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+      } else {
+        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+      }
     }
   }
 

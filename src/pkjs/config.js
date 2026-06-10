@@ -25,6 +25,7 @@ let DEFAULT_BOTTOM_RIGHT_COLOUR = "ffffff";
 let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 
 let DEFAULT_THIN_ARCS = true;
+let DEFAULT_OUTLINED_ARCS = true;
 
 let DEFAULT_WEATHER_UPDATE_INTERVAL = 30;
 let DEFAULT_WEATHER_USE_CELSIUS = true;
@@ -112,14 +113,18 @@ module.exports = [
     items: [
       {
         type: 'heading',
+        defaultValue: 'Style',
+      },
+      {
+        type: 'toggle',
+        messageKey: 'OutlinedArcs',
+        label: 'Outlined arc borders',
+        defaultValue: DEFAULT_OUTLINED_ARCS,
+      },
+      {
+        type: 'heading',
         defaultValue: 'Indicators',
       },
-      // {
-      //   type: 'toggle',
-      //   messageKey: 'ThinArcs',
-      //   label: 'Thin Arc style',
-      //   defaultValue: DEFAULT_THIN_ARCS,
-      // },
       {
         type: "color",
         messageKey: "TopLeft_Colour",

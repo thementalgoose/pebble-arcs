@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include <message_keys.auto.h>
 #include "battery.h"
 #include "constants.h"
 #include "date.h"
@@ -128,6 +129,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     bool show = t->value->int32 != 0;
     persist_write_bool(MESSAGE_KEY_BatteryIndicator, show);
     battery_layer_set_visible(show);
+  }
+
+  // Outlined arc borders
+  t = dict_find(iter, MESSAGE_KEY_OutlinedArcs);
+  if (t) {
+    bool outlined = t->value->int32 != 0;
+    persist_write_bool(MESSAGE_KEY_OutlinedArcs, outlined);
   }
 
   // Quadrant options (Clay select fields arrive as CSTRING, e.g. "5\0\0\0")
