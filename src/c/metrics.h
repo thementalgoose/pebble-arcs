@@ -30,5 +30,8 @@ void metrics_set_temperature_bounds(int lower, int upper);
 // Update the distance goal used for the arc percentage.
 void metrics_set_distance_goal(int goal);
 
+// Restore any cached values loaded from persistent storage.
+void metrics_restore_cached_values(void);
+
 // Fetch a fresh MetricResult for the given option.
 MetricResult metrics_fetch(MetricOption option);
