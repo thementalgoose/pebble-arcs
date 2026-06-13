@@ -3,6 +3,8 @@
 #include "constants.h"
 #include "weather.h"
 
+static const uint32_t PERSIST_KEY_CACHED_HEART_RATE = 0xFEF0;
+
 static int s_step_goal    = 5000;
 static int s_calorie_goal = 2000;
 static int s_hr_lower     = 40;
@@ -11,8 +13,29 @@ static int s_temp_lower    = 5;
 static int s_temp_upper    = 35;
 static int s_distance_goal = 5000;
 
+static int  s_cached_heart_rate = 0;
+static bool s_have_cached_heart_rate = false;
+
 void metrics_set_distance_goal(int goal) {
   s_distance_goal = goal;
+}
+
+static void metrics_cache_heart_rate(int bpm) {
+  if (bpm <= 0) return;
+  if (s_have_cached_heart_rate && s_cached_heart_rate == bpm) return;
+  s_cached_heart_rate = bpm;
+  s_have_cached_heart_rate = true;
+  persist_write_int(PERSIST_KEY_CACHED_HEART_RATE, bpm);
+}
+
+void metrics_restore_cached_values(void) {
+  if (persist_exists(PERSIST_KEY_CACHED_HEART_RATE)) {
+    int stored = persist_read_int(PERSIST_KEY_CACHED_HEART_RATE);
+    if (stored > 0) {
+      s_cached_heart_rate = stored;
+      s_have_cached_heart_rate = true;
+    }
+  }
 }
 
 void metrics_set_temperature_bounds(int lower, int upper) {
@@ -94,6 +117,11 @@ MetricResult metrics_fetch(MetricOption option) {
     }
     case METRIC_HEART_RATE: {
       int bpm = health_peek_current(HealthMetricHeartRateBPM);
+      if (bpm > 0) {
+        metrics_cache_heart_rate(bpm);
+      } else if (s_have_cached_heart_rate) {
+        bpm = s_cached_heart_rate;
+      }
       snprintf(r.label, sizeof(r.label), bpm > 0 ? "%d" : "--", bpm);
       int range = s_hr_upper - s_hr_lower;
       r.percent = (range > 0) ? CLAMP((bpm - s_hr_lower) * 100 / range, 0, 100) : 0;
@@ -132,7 +160,7 @@ MetricResult metrics_fetch(MetricOption option) {
       break;
     }
     case METRIC_TEMPERATURE: {
-      if (weather_has_data()) {
+      if (weather_has_temperature_data()) {
         int  temp    = weather_get_temperature();
         bool celsius = weather_get_use_celsius();
         if (!celsius) temp = temp * 9 / 5 + 32;
@@ -146,7 +174,7 @@ MetricResult metrics_fetch(MetricOption option) {
       break;
     }
     case METRIC_WEATHER_CONDITION: {
-      if (weather_has_data()) {
+      if (weather_has_condition_data()) {
         static const char *condition_labels[] = {
           "CLR", "CLD", "OVR", "FOG", "DRZZ", "RAIN", "SNOW", "STRM"
         };

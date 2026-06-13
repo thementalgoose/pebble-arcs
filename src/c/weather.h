@@ -9,7 +9,12 @@ void weather_set_temperature(int temp);
 void weather_set_condition(int cond);
 void weather_set_use_celsius(bool celsius);
 
+// Restore weather values cached in persistent storage.
+void weather_restore_cached_data(void);
+
 // Accessors used by metrics_fetch().
 int  weather_get_temperature(void);
 int  weather_get_condition(void);
+bool weather_has_temperature_data(void);
+bool weather_has_condition_data(void);
 bool weather_get_use_celsius(void);

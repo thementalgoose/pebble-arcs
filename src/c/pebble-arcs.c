@@ -305,6 +305,9 @@ static void init(void) {
   quadrants_load();
   goals_load();
 
+  weather_restore_cached_data();
+  metrics_restore_cached_values();
+
   // Restore persisted weather unit preference
   if (persist_exists(MESSAGE_KEY_WeatherUseCelsius)) {
     weather_set_use_celsius(persist_read_bool(MESSAGE_KEY_WeatherUseCelsius));
