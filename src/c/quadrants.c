@@ -86,6 +86,15 @@ void quadrants_set_option(Quadrant q, int option) {
   persist_write_int(option_key_for(q), option);
 }
 
+bool quadrants_has_weather_metric(void) {
+  for (int q = 0; q < QUADRANT_COUNT; q++) {
+    if (s_options[q] == METRIC_TEMPERATURE || s_options[q] == METRIC_WEATHER_CONDITION) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void quadrants_set_color(Quadrant q, GColor color) {
   s_colors[q] = color;
   persist_write_int(colour_key_for(q), color.argb);
