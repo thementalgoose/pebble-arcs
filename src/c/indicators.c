@@ -234,26 +234,17 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     draw_quadrant(ctx, arc_rect, bounds, center, radius, (Quadrant)q);
   }
 
-  // Draw quiet-time indicators: triangles on the left and right edges
+  // Draw quiet-time indicator: right triangle shown when quiet-time is active;
+  // left triangle only shown when quiet-time is active AND the phone is disconnected.
   bool quiet_enabled = persist_exists(MESSAGE_KEY_QuietTimeIndicator)
     ? persist_read_bool(MESSAGE_KEY_QuietTimeIndicator) : true;
-  if (quiet_time_is_active() && quiet_enabled) {
+  bool quiet_active = quiet_time_is_active() && quiet_enabled;
+  bool connected = connection_service_peek_pebble_app_connection();
+  if (quiet_active) {
     graphics_context_set_fill_color(ctx, INDICATOR_TEXT_COLOR);
     int16_t center_y = bounds.size.h / 2;
     int16_t tri_h = PBL_IF_ROUND_ELSE(12, 10);
     int16_t tri_w = (tri_h * 3) / 4;
-
-    // Left triangle: tip at the left screen edge, base points inward
-    GPoint left_points[3] = {
-      {tri_w, 0},
-      {0, -tri_h},
-      {0, tri_h},
-    };
-    GPathInfo left_info = { .num_points = 3, .points = left_points };
-    GPath *left_path = gpath_create(&left_info);
-    gpath_move_to(left_path, GPoint(0, center_y));
-    gpath_draw_filled(ctx, left_path);
-    gpath_destroy(left_path);
 
     // Right triangle: tip at the right screen edge, base points inward
     GPoint right_points[3] = {
@@ -266,6 +257,24 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     gpath_move_to(right_path, GPoint(bounds.size.w - 1, center_y));
     gpath_draw_filled(ctx, right_path);
     gpath_destroy(right_path);
+  }
+
+  // Left triangle: only when NOT connected to the phone
+  if (!connected) {
+    graphics_context_set_fill_color(ctx, INDICATOR_TEXT_COLOR);
+    int16_t center_y = bounds.size.h / 2;
+    int16_t tri_h = PBL_IF_ROUND_ELSE(12, 10);
+    int16_t tri_w = (tri_h * 3) / 4;
+    GPoint left_points[3] = {
+      {tri_w, 0},
+      {0, -tri_h},
+      {0, tri_h},
+    };
+    GPathInfo left_info = { .num_points = 3, .points = left_points };
+    GPath *left_path = gpath_create(&left_info);
+    gpath_move_to(left_path, GPoint(0, center_y));
+    gpath_draw_filled(ctx, left_path);
+    gpath_destroy(left_path);
   }
 }
 
