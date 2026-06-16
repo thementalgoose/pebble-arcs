@@ -2,6 +2,7 @@
 #include <message_keys.auto.h>
 #include "indicators.h"
 #include "constants.h"
+#include <string.h>
 
 static Layer *s_layer;
 static char   s_text[QUADRANT_COUNT][8];
@@ -273,10 +274,18 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
 // ---------------------------------------------------------------------------
 
 void indicators_set(Quadrant q, const char *label, int percent, GColor color) {
-  snprintf(s_text[q], sizeof(s_text[q]), "%s", label);
-  s_pct[q]   = CLAMP(percent, 0, 100);
-  s_color[q] = color;
-  if (s_layer) layer_mark_dirty(s_layer);
+  char new_text[sizeof(s_text[q])];
+  snprintf(new_text, sizeof(new_text), "%s", label);
+  int new_pct = CLAMP(percent, 0, 100);
+  GColor new_color = color;
+
+  bool changed = (strcmp(s_text[q], new_text) != 0) || (s_pct[q] != new_pct) || (s_color[q].argb != new_color.argb);
+  if (changed) {
+    snprintf(s_text[q], sizeof(s_text[q]), "%s", new_text);
+    s_pct[q] = new_pct;
+    s_color[q] = new_color;
+    if (s_layer) layer_mark_dirty(s_layer);
+  }
 }
 
 void indicators_layer_create(Layer *root) {

@@ -36,8 +36,11 @@ void battery_layer_create(Layer *root) {
 }
 
 void battery_layer_set(int percent) {
-  s_battery_pct = CLAMP(percent, 0, 100);
-  if (s_battery_layer) layer_mark_dirty(s_battery_layer);
+  int new_pct = CLAMP(percent, 0, 100);
+  if (s_battery_pct != new_pct) {
+    s_battery_pct = new_pct;
+    if (s_battery_layer) layer_mark_dirty(s_battery_layer);
+  }
 }
 
 void battery_layer_set_visible(bool visible) {
