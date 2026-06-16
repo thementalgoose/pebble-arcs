@@ -246,11 +246,11 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   time_layer_update(tick_time);
   date_layer_update(tick_time);
-  quadrants_render_all();
-
+  // Avoid re-rendering quadrants every minute — update them only on explicit
+  // events (battery change, health events, config changes) to save power.
   // Request a weather update only when weather is actually displayed.
   int interval = weather_update_interval();
-  if (interval > 0 && weather_should_update() && tick_time->tm_min % interval == 0) {
+  if (tick_time->tm_min % interval == 0 && interval > 0 && weather_should_update()) {
     weather_request_update();
   }
 }
