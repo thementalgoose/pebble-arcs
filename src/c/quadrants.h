@@ -12,6 +12,9 @@ void quadrants_render_all(void);
 // Update the option shown in a quadrant and persist the change.
 void quadrants_set_option(Quadrant q, int option);
 
+// Returns true when any quadrant is configured to display weather data.
+bool quadrants_has_weather_metric(void);
+
 // Update the arc fill colour for a quadrant and persist the change.
 // Pass GColorClear to fall back to the metric's default colour.
 void quadrants_set_color(Quadrant q, GColor color);

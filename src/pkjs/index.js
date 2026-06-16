@@ -78,10 +78,6 @@ function getWeather() {
 // Pebble event listeners
 // ---------------------------------------------------------------------------
 
-Pebble.addEventListener('ready', function() {
-  getWeather();
-});
-
 Pebble.addEventListener('appmessage', function(e) {
   if (e.payload.WeatherRequestUpdate) {
     getWeather();

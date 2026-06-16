@@ -103,7 +103,19 @@ static int tuple_signed_int(const Tuple *t) {
 // Weather helpers
 // ---------------------------------------------------------------------------
 
+static int weather_update_interval(void) {
+  return persist_exists(MESSAGE_KEY_WeatherUpdateInterval)
+    ? persist_read_int(MESSAGE_KEY_WeatherUpdateInterval) : 60;
+}
+
+static bool weather_should_update(void) {
+  return weather_update_interval() > 0 && quadrants_has_weather_metric();
+}
+
 static void weather_request_update(void) {
+  if (!connection_service_peek_pebble_app_connection()) {
+    return;
+  }
   DictionaryIterator *iter;
   if (app_message_outbox_begin(&iter) == APP_MSG_OK) {
     dict_write_uint8(iter, MESSAGE_KEY_WeatherRequestUpdate, 1);
@@ -236,10 +248,9 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   date_layer_update(tick_time);
   quadrants_render_all();
 
-  // Request a weather update at the configured interval
-  int interval = persist_exists(MESSAGE_KEY_WeatherUpdateInterval)
-    ? persist_read_int(MESSAGE_KEY_WeatherUpdateInterval) : 30;
-  if (interval > 0 && tick_time->tm_min % interval == 0) {
+  // Request a weather update only when weather is actually displayed.
+  int interval = weather_update_interval();
+  if (interval > 0 && weather_should_update() && tick_time->tm_min % interval == 0) {
     weather_request_update();
   }
 }
@@ -326,6 +337,10 @@ static void init(void) {
     .unload = window_unload,
   });
   window_stack_push(s_window, true);
+
+  if (weather_should_update()) {
+    weather_request_update();
+  }
 
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   battery_state_service_subscribe(battery_handler);
