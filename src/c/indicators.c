@@ -11,7 +11,8 @@ static GColor s_color[QUADRANT_COUNT];
 
 static bool outlined_arcs_enabled(void) {
   return persist_exists(MESSAGE_KEY_OutlinedArcs)
-    ? persist_read_bool(MESSAGE_KEY_OutlinedArcs) : true;
+    ? persist_read_bool(MESSAGE_KEY_OutlinedArcs)
+    : (PBL_IF_COLOR_ELSE(false, true));
 }
 
 static GColor fade_color(GColor color) {
