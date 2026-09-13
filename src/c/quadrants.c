@@ -28,21 +28,12 @@ static uint32_t colour_key_for(Quadrant q) {
 }
 
 // Default options per quadrant — must match DEFAULT_* values in config.js
-#if PBL_COLOR
 static const int k_default_options[QUADRANT_COUNT] = {
   [QUADRANT_NW] = METRIC_DAY,
   [QUADRANT_NE] = METRIC_WEEKDAY,
   [QUADRANT_SW] = METRIC_BATTERY,
   [QUADRANT_SE] = METRIC_WEEK,
 };
-#else
-static const int k_default_options[QUADRANT_COUNT] = {
-  [QUADRANT_NW] = METRIC_STEPS,
-  [QUADRANT_NE] = METRIC_BATTERY,
-  [QUADRANT_SW] = METRIC_DISTANCE,
-  [QUADRANT_SE] = METRIC_WEEK,
-};
-#endif
 
 static int    s_options[QUADRANT_COUNT];
 static GColor s_colors[QUADRANT_COUNT];

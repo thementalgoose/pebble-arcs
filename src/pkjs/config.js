@@ -21,13 +21,13 @@ const activeWatchInfo = (typeof Pebble !== 'undefined' && Pebble.getActiveWatchI
 const isColorWatch = !!activeWatchInfo && activeWatchInfo.platform && activeWatchInfo.platform !== 'aplite';
 
 let DEFAULT_TOP_LEFT_COLOUR = isColorWatch ? "f5e39a" : "ffffff";
-let DEFAULT_TOP_LEFT_OPTION = isColorWatch ? 3 : 6;
+let DEFAULT_TOP_LEFT_OPTION = 3;
 let DEFAULT_TOP_RIGHT_COLOUR = isColorWatch ? "a7d89b" : "ffffff";
-let DEFAULT_TOP_RIGHT_OPTION = isColorWatch ? 1 : 4;
+let DEFAULT_TOP_RIGHT_OPTION = 1;
 let DEFAULT_BOTTOM_LEFT_COLOUR = isColorWatch ? "f0a7a7" : "ffffff";
-let DEFAULT_BOTTOM_LEFT_OPTION = isColorWatch ? 4 : 7;
+let DEFAULT_BOTTOM_LEFT_OPTION = 4;
 let DEFAULT_BOTTOM_RIGHT_COLOUR = isColorWatch ? "a6d0ff" : "ffffff";
-let DEFAULT_BOTTOM_RIGHT_OPTION = isColorWatch ? 0 : 0;
+let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 
 let DEFAULT_THIN_ARCS = true;
 let DEFAULT_OUTLINED_ARCS = isColorWatch ? false : true;
