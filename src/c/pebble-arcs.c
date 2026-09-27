@@ -85,7 +85,12 @@ static void goals_load(void) {
 // Clay may send any field as CSTRING rather than INT depending on the control
 // type (select, input). Parse whichever representation actually arrived.
 static int tuple_int(const Tuple *t) {
-  return (t->type == TUPLE_CSTRING) ? atoi(t->value->cstring) : (int)t->value->int32;
+  if (t->type == TUPLE_CSTRING) return atoi(t->value->cstring);
+  switch (t->length) {
+    case 1:  return (int)t->value->int8;
+    case 2:  return (int)t->value->int16;
+    default: return (int)t->value->int32;
+  }
 }
 
 // Signed variant: handles int8/int16/int32 lengths for values that can be
