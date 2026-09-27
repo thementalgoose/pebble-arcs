@@ -150,6 +150,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     persist_write_bool(MESSAGE_KEY_OutlinedArcs, outlined);
   }
 
+  // Indicator width
+  t = dict_find(iter, MESSAGE_KEY_IndicatorWidth);
+  if (t) {
+    indicators_set_width(tuple_int(t));
+    design_layer_apply_theme();
+  }
+
   // Quadrant options (Clay select fields arrive as CSTRING, e.g. "5\0\0\0")
   t = dict_find(iter, MESSAGE_KEY_TopLeft_Option);
   if (t) quadrants_set_option(QUADRANT_NW, tuple_int(t));

@@ -18,7 +18,15 @@ let DEFAULT_STANDALONE_BATTERY_PERCENTAGE = false;
 const activeWatchInfo = (typeof Pebble !== 'undefined' && Pebble.getActiveWatchInfo)
   ? Pebble.getActiveWatchInfo()
   : {};
+const platform = (activeWatchInfo && activeWatchInfo.platform) ? activeWatchInfo.platform : '';
 const isColorWatch = !!activeWatchInfo && activeWatchInfo.platform && activeWatchInfo.platform !== 'aplite';
+
+let DEFAULT_INDICATOR_WIDTH = 5;
+if (platform === 'emery') {
+  DEFAULT_INDICATOR_WIDTH = 12;
+} else if (platform === 'gabbro') {
+  DEFAULT_INDICATOR_WIDTH = 10;
+}
 
 let DEFAULT_TOP_LEFT_COLOUR = isColorWatch ? "f5e39a" : "ffffff";
 let DEFAULT_TOP_LEFT_OPTION = 3;
@@ -139,6 +147,15 @@ module.exports = [
       {
         type: 'heading',
         defaultValue: 'Indicators',
+      },
+      {
+        type: 'slider',
+        messageKey: 'IndicatorWidth',
+        label: 'Indicator Width',
+        defaultValue: DEFAULT_INDICATOR_WIDTH,
+        min: 1,
+        max: 20,
+        step: 1,
       },
       {
         type: "color",

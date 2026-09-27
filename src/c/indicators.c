@@ -8,6 +8,30 @@ static Layer *s_layer;
 static char   s_text[QUADRANT_COUNT][8];
 static int    s_pct[QUADRANT_COUNT];
 static GColor s_color[QUADRANT_COUNT];
+static int    s_indicator_width = -1;
+
+int indicators_get_width(void) {
+  if (s_indicator_width < 0) {
+    s_indicator_width = persist_exists(MESSAGE_KEY_IndicatorWidth)
+      ? persist_read_int(MESSAGE_KEY_IndicatorWidth)
+      : DEFAULT_INDICATOR_WIDTH;
+  }
+  return s_indicator_width;
+}
+
+int indicators_get_border(void) {
+  int width = indicators_get_width();
+  int border = (width * ARC_BORDER + DEFAULT_INDICATOR_WIDTH / 2) / DEFAULT_INDICATOR_WIDTH;
+  return (border < 1) ? 1 : border;
+}
+
+void indicators_set_width(int width) {
+  if (s_indicator_width != width) {
+    s_indicator_width = width;
+    persist_write_int(MESSAGE_KEY_IndicatorWidth, width);
+    if (s_layer) layer_mark_dirty(s_layer);
+  }
+}
 
 static bool outlined_arcs_enabled(void) {
   return persist_exists(MESSAGE_KEY_OutlinedArcs)
@@ -76,16 +100,20 @@ static GColor fade_color(GColor color) {
 // Arc drawing helpers
 // ---------------------------------------------------------------------------
 
+#if PBL_ROUND
 // Returns a text rect centred just inside the arc band at the arc's midpoint angle.
 // Used on round displays to place labels within the arc rather than in screen corners.
 static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg) {
   int     mid_deg     = (lo_deg + hi_deg) / 2;
   int32_t angle       = DEG_TO_TRIGANGLE(mid_deg);
-  uint16_t text_r     = radius - (ARC_WIDTH / 2) - (ARC_BORDER / 2) - (TEXT_H / 2) - INDICATOR_TEXT_INSET;
+  int     arc_w       = indicators_get_width();
+  int     arc_b       = indicators_get_border();
+  uint16_t text_r     = radius - (arc_w / 2) - (arc_b / 2) - (TEXT_H / 2) - INDICATOR_TEXT_INSET;
   int16_t x = center.x + (int16_t)(sin_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
   int16_t y = center.y - (int16_t)(cos_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO) - 3;
   return GRect(x - TEXT_W / 2, y - TEXT_H / 2, TEXT_W, TEXT_H);
 }
+#endif
 
 // Draws a dim background arc for the full span, then a coloured fill arc up to
 // `percent`, plus a text label. `reversed` makes the fill grow from the high
@@ -102,12 +130,15 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     ? DEG_TO_TRIGANGLE(hi_deg - (hi_deg - lo_deg) * percent / 100)
     : DEG_TO_TRIGANGLE(lo_deg + (hi_deg - lo_deg) * percent / 100);
 
+  int arc_w = indicators_get_width();
+  int arc_b = indicators_get_border();
+
   if (outlined_arcs_enabled()) {
-    graphics_context_set_stroke_width(ctx, ARC_WIDTH + ARC_BORDER);
+    graphics_context_set_stroke_width(ctx, arc_w + arc_b);
     graphics_context_set_stroke_color(ctx, BAR_COLOR);
     graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
-    graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+    graphics_context_set_stroke_width(ctx, arc_w);
     graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
     graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
@@ -120,7 +151,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
       }
     }
   } else {
-    graphics_context_set_stroke_width(ctx, ARC_WIDTH);
+    graphics_context_set_stroke_width(ctx, arc_w);
     graphics_context_set_stroke_color(ctx, fade_color(color));
     graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
 
@@ -228,7 +259,8 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
 static void layer_update_proc(Layer *layer, GContext *ctx) {
   GRect    bounds = layer_get_bounds(layer);
   GPoint   center = grect_center_point(&bounds);
-  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
+  int      arc_w  = indicators_get_width();
+  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (arc_w / 2) - ARC_EDGE;
   GRect    arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
   for (int q = 0; q < QUADRANT_COUNT; q++) {
