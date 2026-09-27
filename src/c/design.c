@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include "design.h"
+#include "indicators.h"
 #include "constants.h"
 
 static Layer *s_design_layer;
@@ -29,7 +30,7 @@ static void draw_ellipsis(GContext *ctx, GPoint center, uint16_t radius, int cen
 static void design_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect    bounds = layer_get_bounds(layer);
   GPoint   center = grect_center_point(&bounds);
-  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (ARC_WIDTH / 2) - ARC_EDGE;
+  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (indicators_get_width() / 2) - ARC_EDGE;
 
   graphics_context_set_fill_color(ctx, BAR_COLOR);
 

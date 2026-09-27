@@ -13,5 +13,9 @@ void indicators_layer_create(Layer *root);
 void indicators_layer_destroy(void);
 void indicators_layer_apply_theme(void);
 
+int indicators_get_width(void);
+int indicators_get_border(void);
+void indicators_set_width(int width);
+
 // Bind label text, arc fill percent (0–100), and arc colour to a quadrant.
 void indicators_set(Quadrant q, const char *label, int percent, GColor color);
