@@ -10,7 +10,7 @@ Simple pebble watchface with metric arcs displayed in each corner
 
 | Codename | Pebble name       | Watchface                                               |
 |----------|-------------------|---------------------------------------------------------|
-| aplite   | Pebble            | <img src="appstore/basalt/watchface.png" width="120"/>  |
+| aplite   | Pebble            | <img src="appstore/aplite/watchface.png" width="120"/>  |
 | basalt   | Pebble Time       | <img src="appstore/basalt/watchface.png" width="120"/>  |
 | chalk    | Pebble Time Round | <img src="appstore/chalk/watchface.png" width="120"/>   |
 | diorite  | Pebble 2          | <img src="appstore/diorite/watchface.png" width="120"/> |
