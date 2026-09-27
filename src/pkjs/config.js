@@ -117,16 +117,22 @@ module.exports = [
     items: [
       {
         type: 'heading',
-        defaultValue: 'Quiet time indicator',
+        defaultValue: 'Statuses',
       },
       {
         type: 'text',
-        defaultValue: 'Show an indicator (two triangles in the left + right of the watchface) when quiet time is enabled',
+        defaultValue: 'Show status indicators on the watchface edges',
       },
       {
         type: 'toggle',
         messageKey: 'QuietTimeIndicator',
-        label: 'Show quiet-time indicator triangles',
+        label: 'Show quiet-time indicator (right)',
+        defaultValue: true,
+      },
+      {
+        type: 'toggle',
+        messageKey: 'DisconnectIndicator',
+        label: 'Show disconnection indicator (left)',
         defaultValue: true,
       }
     ]
