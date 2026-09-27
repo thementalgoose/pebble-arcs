@@ -15,6 +15,10 @@ int indicators_get_width(void) {
     s_indicator_width = persist_exists(MESSAGE_KEY_IndicatorWidth)
       ? persist_read_int(MESSAGE_KEY_IndicatorWidth)
       : DEFAULT_INDICATOR_WIDTH;
+    if (s_indicator_width < 1 || s_indicator_width >= 25) {
+      s_indicator_width = DEFAULT_INDICATOR_WIDTH;
+      persist_write_int(MESSAGE_KEY_IndicatorWidth, s_indicator_width);
+    }
   }
   return s_indicator_width;
 }
@@ -26,6 +30,9 @@ int indicators_get_border(void) {
 }
 
 void indicators_set_width(int width) {
+  if (width < 1 || width >= 25) {
+    width = DEFAULT_INDICATOR_WIDTH;
+  }
   if (s_indicator_width != width) {
     s_indicator_width = width;
     persist_write_int(MESSAGE_KEY_IndicatorWidth, width);
