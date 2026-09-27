@@ -267,12 +267,10 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     draw_quadrant(ctx, arc_rect, bounds, center, radius, (Quadrant)q);
   }
 
-  // Draw quiet-time indicator: right triangle shown when quiet-time is active;
-  // left triangle only shown when quiet-time is active AND the phone is disconnected.
+  // Right triangle: Quiet time indicator (when quiet time is active and enabled)
   bool quiet_enabled = persist_exists(MESSAGE_KEY_QuietTimeIndicator)
     ? persist_read_bool(MESSAGE_KEY_QuietTimeIndicator) : true;
   bool quiet_active = quiet_time_is_active() && quiet_enabled;
-  bool connected = connection_service_peek_pebble_app_connection();
   if (quiet_active) {
     graphics_context_set_fill_color(ctx, INDICATOR_TEXT_COLOR);
     int16_t center_y = bounds.size.h / 2;
@@ -292,8 +290,11 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     gpath_destroy(right_path);
   }
 
-  // Left triangle: only when NOT connected to the phone
-  if (!connected) {
+  // Left triangle: Disconnection indicator (when disconnected and enabled)
+  bool disconnect_enabled = persist_exists(MESSAGE_KEY_DisconnectIndicator)
+    ? persist_read_bool(MESSAGE_KEY_DisconnectIndicator) : true;
+  bool connected = connection_service_peek_pebble_app_connection();
+  if (!connected && disconnect_enabled) {
     graphics_context_set_fill_color(ctx, INDICATOR_TEXT_COLOR);
     int16_t center_y = bounds.size.h / 2;
     int16_t tri_h = PBL_IF_ROUND_ELSE(12, 10);

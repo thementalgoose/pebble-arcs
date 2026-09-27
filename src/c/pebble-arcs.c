@@ -143,6 +143,20 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     battery_layer_set_visible(show);
   }
 
+  // Quiet time indicator (right triangle)
+  t = dict_find(iter, MESSAGE_KEY_QuietTimeIndicator);
+  if (t) {
+    persist_write_bool(MESSAGE_KEY_QuietTimeIndicator, t->value->int32 != 0);
+    indicators_layer_apply_theme();
+  }
+
+  // Disconnection indicator (left triangle)
+  t = dict_find(iter, MESSAGE_KEY_DisconnectIndicator);
+  if (t) {
+    persist_write_bool(MESSAGE_KEY_DisconnectIndicator, t->value->int32 != 0);
+    indicators_layer_apply_theme();
+  }
+
   // Outlined arc borders
   t = dict_find(iter, MESSAGE_KEY_OutlinedArcs);
   if (t) {
@@ -269,6 +283,7 @@ static void battery_handler(BatteryChargeState state) {
 
 static void bluetooth_handler(bool connected) {
   design_layer_set_connected(connected);
+  indicators_layer_apply_theme();
 }
 
 static void health_handler(HealthEventType event, void *context) {
