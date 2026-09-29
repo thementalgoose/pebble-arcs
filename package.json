@@ -35,6 +35,7 @@
       "QuietTimeIndicator",
       "DisconnectIndicator",
       "OutlinedArcs",
+      "ShowIndicatorText",
       "IndicatorWidth",
       "TopLeft_Option",
       "TopLeft_Colour",

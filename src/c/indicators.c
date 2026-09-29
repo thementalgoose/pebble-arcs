@@ -46,6 +46,12 @@ static bool outlined_arcs_enabled(void) {
     : (PBL_IF_COLOR_ELSE(false, true));
 }
 
+static bool show_indicator_text_enabled(void) {
+  return persist_exists(MESSAGE_KEY_ShowIndicatorText)
+    ? persist_read_bool(MESSAGE_KEY_ShowIndicatorText)
+    : true;
+}
+
 static GColor fade_color(GColor color) {
   #if PBL_COLOR
   static const GColor k_light_background_colors[] = {
@@ -190,10 +196,12 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
     }
   }
 
-  graphics_context_set_text_color(ctx, INDICATOR_TEXT_COLOR);
-  graphics_draw_text(ctx, text, INDICATOR_FONT,
-                     text_rect, GTextOverflowModeTrailingEllipsis,
-                     text_alignment, NULL);
+  if (show_indicator_text_enabled()) {
+    graphics_context_set_text_color(ctx, INDICATOR_TEXT_COLOR);
+    graphics_draw_text(ctx, text, INDICATOR_FONT,
+                       text_rect, GTextOverflowModeTrailingEllipsis,
+                       text_alignment, NULL);
+  }
 }
 
 static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
