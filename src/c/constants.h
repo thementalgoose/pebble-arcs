@@ -7,11 +7,19 @@
 // ---------------------------------------------------------------------------
 // Layout - All
 // ---------------------------------------------------------------------------
+#if defined(PBL_PLATFORM_EMERY) 
 #define INDICATOR_CORNER_DISTANCE 8
 #define EDGE_LEFT               INDICATOR_CORNER_DISTANCE
 #define EDGE_TOP                INDICATOR_CORNER_DISTANCE - 4
 #define EDGE_BOTTOM             INDICATOR_CORNER_DISTANCE
 #define EDGE_RIGHT              INDICATOR_CORNER_DISTANCE
+#else 
+#define INDICATOR_CORNER_DISTANCE 4
+#define EDGE_LEFT               INDICATOR_CORNER_DISTANCE
+#define EDGE_TOP                INDICATOR_CORNER_DISTANCE - 2
+#define EDGE_BOTTOM             INDICATOR_CORNER_DISTANCE
+#define EDGE_RIGHT              INDICATOR_CORNER_DISTANCE
+#endif
 // Layout - Time
 #if defined(PBL_PLATFORM_EMERY) 
 #define HOURS_FONT              fonts_get_system_font(FONT_KEY_LECO_60_NUMBERS_AM_PM)
