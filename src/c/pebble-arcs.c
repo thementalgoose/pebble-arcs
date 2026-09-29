@@ -169,6 +169,14 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     persist_write_bool(MESSAGE_KEY_OutlinedArcs, outlined);
   }
 
+  // Show indicator text
+  t = dict_find(iter, MESSAGE_KEY_ShowIndicatorText);
+  if (t) {
+    bool show = t->value->int32 != 0;
+    persist_write_bool(MESSAGE_KEY_ShowIndicatorText, show);
+    indicators_layer_apply_theme();
+  }
+
   // Indicator width
   t = dict_find(iter, MESSAGE_KEY_IndicatorWidth);
   if (t) {

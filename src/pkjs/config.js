@@ -155,6 +155,12 @@ module.exports = [
         defaultValue: 'Indicators',
       },
       {
+        type: 'toggle',
+        messageKey: 'ShowIndicatorText',
+        label: 'Show indicator text',
+        defaultValue: true,
+      },
+      {
         type: 'slider',
         messageKey: 'IndicatorWidth',
         label: 'Indicator Width',
