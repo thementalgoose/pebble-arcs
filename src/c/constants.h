@@ -7,10 +7,11 @@
 // ---------------------------------------------------------------------------
 // Layout - All
 // ---------------------------------------------------------------------------
-#define EDGE_LEFT               2
-#define EDGE_TOP                2
-#define EDGE_BOTTOM             2
-#define EDGE_RIGHT              2
+#define INDICATOR_CORNER_DISTANCE 8
+#define EDGE_LEFT               INDICATOR_CORNER_DISTANCE
+#define EDGE_TOP                INDICATOR_CORNER_DISTANCE - 4
+#define EDGE_BOTTOM             INDICATOR_CORNER_DISTANCE
+#define EDGE_RIGHT              INDICATOR_CORNER_DISTANCE
 // Layout - Time
 #if defined(PBL_PLATFORM_EMERY) 
 #define HOURS_FONT              fonts_get_system_font(FONT_KEY_LECO_60_NUMBERS_AM_PM)
@@ -61,12 +62,15 @@
 #define INDICATOR_FONT          fonts_get_system_font(FONT_KEY_GOTHIC_24)
 #define TEXT_W                  48
 #define TEXT_H                  24
+#define INDICATOR_Y_OFFSET      -4
 #else
 #define INDICATOR_FONT          fonts_get_system_font(FONT_KEY_GOTHIC_18)
 #define TEXT_W                  40
 #define TEXT_H                  18
+#define INDICATOR_Y_OFFSET      -3
 #endif
 #define INDICATOR_TEXT_INSET    7
+#define INNER_TEXT_PADDING      4
 
 // Layout - Battery
 #if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
