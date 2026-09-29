@@ -108,16 +108,34 @@ static GColor fade_color(GColor color) {
 // ---------------------------------------------------------------------------
 
 #if PBL_ROUND
-// Returns a text rect centred just inside the arc band at the arc's midpoint angle.
-// Used on round displays to place labels within the arc rather than in screen corners.
-static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg) {
-  int     mid_deg     = (lo_deg + hi_deg) / 2;
-  int32_t angle       = DEG_TO_TRIGANGLE(mid_deg);
+// Returns a text rect positioned along the arc band for round displays.
+static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg, Quadrant q) {
+  int span = hi_deg - lo_deg;
+  int mid_deg = (lo_deg + hi_deg) / 2;
+  int shift = (span * 20) / 100;
+  int target_deg = mid_deg;
+
+  switch (q) {
+    case QUADRANT_NW: target_deg = mid_deg + shift; break;
+    case QUADRANT_NE: target_deg = mid_deg - shift; break;
+    case QUADRANT_SW: target_deg = mid_deg - shift; break;
+    case QUADRANT_SE: target_deg = mid_deg + shift; break;
+    default: break;
+  }
+
+  int32_t angle       = DEG_TO_TRIGANGLE(target_deg);
   int     arc_w       = indicators_get_width();
   int     arc_b       = indicators_get_border();
   uint16_t text_r     = radius - (arc_w / 2) - (arc_b / 2) - (TEXT_H / 2) - INDICATOR_TEXT_INSET;
   int16_t x = center.x + (int16_t)(sin_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
   int16_t y = center.y - (int16_t)(cos_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO) - 3;
+  switch (q) {
+    case QUADRANT_NW: x += INNER_TEXT_PADDING; y += INNER_TEXT_PADDING; break;
+    case QUADRANT_NE: x -= INNER_TEXT_PADDING; y += INNER_TEXT_PADDING; break;
+    case QUADRANT_SW: x += INNER_TEXT_PADDING; y -= INNER_TEXT_PADDING; break;
+    case QUADRANT_SE: x -= INNER_TEXT_PADDING; y -= INNER_TEXT_PADDING; break;
+    default: break;
+  }
   return GRect(x - TEXT_W / 2, y - TEXT_H / 2, TEXT_W, TEXT_H);
 }
 #endif
@@ -130,7 +148,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
                      int lo_deg, int hi_deg,
                      const char *text, int percent,
                      GColor color, bool reversed,
-                     GRect text_rect) {
+                     GRect text_rect, GTextAlignment text_alignment) {
   int32_t angle_lo   = DEG_TO_TRIGANGLE(lo_deg);
   int32_t angle_hi   = DEG_TO_TRIGANGLE(hi_deg);
   int32_t angle_fill = reversed
@@ -175,7 +193,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
   graphics_context_set_text_color(ctx, INDICATOR_TEXT_COLOR);
   graphics_draw_text(ctx, text, INDICATOR_FONT,
                      text_rect, GTextOverflowModeTrailingEllipsis,
-                     GTextAlignmentCenter, NULL);
+                     text_alignment, NULL);
 }
 
 static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
@@ -197,9 +215,10 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/false,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi),
-          GRect(EDGE_LEFT, EDGE_TOP, TEXT_W, TEXT_H)
-        )
+          text_rect_for_arc(center, radius, lo, hi, q),
+          GRect(EDGE_LEFT + INNER_TEXT_PADDING, EDGE_TOP + INDICATOR_Y_OFFSET + INNER_TEXT_PADDING, TEXT_W, TEXT_H)
+        ),
+        GTextAlignmentLeft
       );
       break;
     }
@@ -215,9 +234,10 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/true,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi),
-          GRect(bounds.size.w - TEXT_W - EDGE_RIGHT, EDGE_TOP, TEXT_W, TEXT_H)
-        )
+          text_rect_for_arc(center, radius, lo, hi, q),
+          GRect(bounds.size.w - TEXT_W - EDGE_RIGHT - INNER_TEXT_PADDING, EDGE_TOP + INDICATOR_Y_OFFSET + INNER_TEXT_PADDING, TEXT_W, TEXT_H)
+        ),
+        GTextAlignmentRight
       );
       break;
     }
@@ -233,9 +253,10 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/true,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi),
-          GRect(EDGE_LEFT, bounds.size.h - (TEXT_H + EDGE_BOTTOM + 8), TEXT_W, TEXT_H)
-        )
+          text_rect_for_arc(center, radius, lo, hi, q),
+          GRect(EDGE_LEFT + INNER_TEXT_PADDING, bounds.size.h - TEXT_H - EDGE_BOTTOM - INNER_TEXT_PADDING, TEXT_W, TEXT_H)
+        ),
+        GTextAlignmentLeft
       );
       break;
     }
@@ -251,10 +272,11 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/false,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi),
-          GRect(bounds.size.w - TEXT_W - EDGE_RIGHT,
-                bounds.size.h - (TEXT_H + EDGE_BOTTOM + 8), TEXT_W, TEXT_H)
-        )
+          text_rect_for_arc(center, radius, lo, hi, q),
+          GRect(bounds.size.w - TEXT_W - EDGE_RIGHT - INNER_TEXT_PADDING,
+                bounds.size.h - TEXT_H - EDGE_BOTTOM - INNER_TEXT_PADDING, TEXT_W, TEXT_H)
+        ),
+        GTextAlignmentRight
       );
       break;
     }
