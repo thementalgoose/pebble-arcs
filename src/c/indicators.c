@@ -108,11 +108,22 @@ static GColor fade_color(GColor color) {
 // ---------------------------------------------------------------------------
 
 #if PBL_ROUND
-// Returns a text rect centred just inside the arc band at the arc's midpoint angle.
-// Used on round displays to place labels within the arc rather than in screen corners.
+// Returns a text rect positioned along the arc band for round displays.
 static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg, Quadrant q) {
-  int     mid_deg     = (lo_deg + hi_deg) / 2;
-  int32_t angle       = DEG_TO_TRIGANGLE(mid_deg);
+  int span = hi_deg - lo_deg;
+  int mid_deg = (lo_deg + hi_deg) / 2;
+  int shift = (span * 20) / 100;
+  int target_deg = mid_deg;
+
+  switch (q) {
+    case QUADRANT_NW: target_deg = mid_deg + shift; break;
+    case QUADRANT_NE: target_deg = mid_deg - shift; break;
+    case QUADRANT_SW: target_deg = mid_deg - shift; break;
+    case QUADRANT_SE: target_deg = mid_deg + shift; break;
+    default: break;
+  }
+
+  int32_t angle       = DEG_TO_TRIGANGLE(target_deg);
   int     arc_w       = indicators_get_width();
   int     arc_b       = indicators_get_border();
   uint16_t text_r     = radius - (arc_w / 2) - (arc_b / 2) - (TEXT_H / 2) - INDICATOR_TEXT_INSET;
