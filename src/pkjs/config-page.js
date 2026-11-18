@@ -14,9 +14,8 @@ var CSS = [
   '.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}',
   '.row:first-of-type{border-top:0}',
   '.row label{flex:1}',
-  'select,input[type=number]{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;',
-  'padding:8px 10px;font-size:16px;max-width:55%}',
-  'input[type=number]{width:120px;text-align:right}',
+  'input[type=number]{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;',
+  'padding:8px 10px;font-size:16px;max-width:55%;width:120px;text-align:right}',
   'input[type=range]{flex:1;accent-color:var(--accent)}',
   '.val{min-width:28px;text-align:right;color:var(--muted)}',
   '.sw{position:relative;width:48px;height:28px;flex:none}',
@@ -63,26 +62,26 @@ var SCRIPT = [
   'var D=window.__DATA__,S=D.settings,$=function(i){return document.getElementById(i)};',
   'function apply(){document.body.className=S.DarkTheme?"":"light"}',
   'function toggle(k){var e=$(k);e.checked=!!S[k];e.onchange=function(){S[k]=e.checked;apply()}}',
-  'function select(k){var e=$(k);e.value=String(S[k]);e.onchange=function(){S[k]=parseInt(e.value,10)}}',
   'function num(k){var e=$(k);e.value=S[k];e.oninput=function(){S[k]=e.value}}',
-  'D.toggles.forEach(toggle);D.selects.forEach(select);D.nums.forEach(num);',
-  'function label(v){var l="";D.sections.forEach(function(s){s.options.forEach(function(o){if(o.value===v)l=o.label})});return l||String(v)}',
-  'var ov=$("ov"),sb=$("sheetBody"),cur=null;',
-  'function closeSheet(){ov.className="ov";document.body.classList.remove("lock");cur=null}',
-  'function openSheet(i){cur=i;var q=D.quads[i],key=q+"_Option";$("sheetTitle").textContent=D.quadNames[i];sb.innerHTML="";',
-  ' D.sections.forEach(function(s){var h=document.createElement("div");h.className="sec";h.textContent=s.title;sb.appendChild(h);',
-  '  s.options.forEach(function(o){var st=D.status[o.value]||{},off=st.enabled===false;',
+  'D.toggles.forEach(toggle);D.nums.forEach(num);',
+  'function label(secs,v){var l="";secs.forEach(function(s){s.options.forEach(function(o){if(o.value===v)l=o.label})});return l||String(v)}',
+  'var ov=$("ov"),sb=$("sheetBody");',
+  'function closeSheet(){ov.className="ov";document.body.classList.remove("lock")}',
+  'function openSheet(title,key,pickId,secs,useStatus){$("sheetTitle").textContent=title;sb.innerHTML="";',
+  ' secs.forEach(function(s){if(s.title){var h=document.createElement("div");h.className="sec";h.textContent=s.title;sb.appendChild(h)}',
+  '  s.options.forEach(function(o){var st=(useStatus&&D.status[o.value])||{},off=st.enabled===false;',
   '   var r=document.createElement("div");r.className="opt"+(S[key]===o.value?" on":"")+(off?" off":"");',
   '   var t=document.createElement("div");t.className="ot";var l=document.createElement("span");l.textContent=o.label;t.appendChild(l);',
   '   if(st.detail){var d=document.createElement("small");d.textContent=st.detail;t.appendChild(d)}',
   '   if(off&&st.reason){var w=document.createElement("small");w.className="why";w.textContent=st.reason;t.appendChild(w)}',
   '   r.appendChild(t);if(off)r.setAttribute("aria-disabled","true");',
-  '   r.onclick=function(){if(off)return;S[key]=o.value;$(q+"_pick").textContent=o.label;closeSheet()};sb.appendChild(r)})});',
+  '   r.onclick=function(){if(off)return;S[key]=o.value;$(pickId).textContent=o.label;closeSheet()};sb.appendChild(r)})});',
   ' sb.scrollTop=0;document.body.classList.add("lock");ov.className="ov open"}',
   '$("sheetClose").onclick=closeSheet;',
   'ov.onclick=function(e){if(e.target===ov)closeSheet()};',
   'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeSheet()});',
-  'D.quads.forEach(function(q,i){S[q+"_Option"]=parseInt(S[q+"_Option"],10);$(q+"_pick").textContent=label(S[q+"_Option"]);$(q+"_pick").onclick=function(){openSheet(i)}});',
+  'D.quads.forEach(function(q,i){var key=q+"_Option",pid=q+"_pick";S[key]=parseInt(S[key],10);$(pid).textContent=label(D.sections,S[key]);$(pid).onclick=function(){openSheet(D.quadNames[i],key,pid,D.sections,true)}});',
+  'S.WeatherUpdateInterval=parseInt(S.WeatherUpdateInterval,10);$("WeatherUpdateInterval_pick").textContent=label(D.intervalSections,S.WeatherUpdateInterval);$("WeatherUpdateInterval_pick").onclick=function(){openSheet("Update interval","WeatherUpdateInterval","WeatherUpdateInterval_pick",D.intervalSections,false)};',
   'var w=$("IndicatorWidth"),wv=$("IndicatorWidthVal");w.value=S.IndicatorWidth;wv.textContent=w.value;',
   'w.oninput=function(){S.IndicatorWidth=parseInt(w.value,10);wv.textContent=w.value};',
   'D.quads.forEach(function(q){var g=$(q+"_grid"),key=q+"_Colour";',
@@ -128,12 +127,6 @@ function toggleRow(id) {
     '<span class="sw"><input type="checkbox" id="' + id + '"><i></i></span></div>';
 }
 
-function optionTags(opts) {
-  return opts.map(function(o) {
-    return '<option value="' + o.value + '">' + esc(o.label) + '</option>';
-  }).join('');
-}
-
 function build(settings, pluginStatus) {
   var palette = [];
   if (cfg.isColorWatch) {
@@ -142,7 +135,6 @@ function build(settings, pluginStatus) {
     palette = ['000000', 'FFFFFF'];
   }
 
-  var selects = ['WeatherUpdateInterval'];
   var quadHtml = QUADS.map(function(q) {
     return '<div class="quad"><div class="t">' + q[1] + '</div>' +
       '<div class="row"><label>Data</label>' +
@@ -158,7 +150,6 @@ function build(settings, pluginStatus) {
   var data = {
     settings: settings,
     toggles: TOGGLES.map(function(t) { return t[0]; }),
-    selects: selects,
     nums: NUMS.map(function(n) { return n[0]; }),
     quads: QUADS.map(function(q) { return q[0]; }),
     palette: palette,
@@ -167,6 +158,9 @@ function build(settings, pluginStatus) {
     sections: [
       { title: 'Indicators', options: cfg.indicatorOptions },
       { title: 'Plugin Data', options: cfg.pluginOptions }
+    ],
+    intervalSections: [
+      { options: [{ label: '15 minutes', value: 15 }, { label: '30 minutes', value: 30 }, { label: '60 minutes', value: 60 }] }
     ]
   };
   var json = JSON.stringify(data).replace(/</g, '\\u003c');
@@ -186,10 +180,8 @@ function build(settings, pluginStatus) {
       '<div class="hint">For the relevant indicators above, set goals and bounds here</div>' + numHtml + '</div>' +
     '<div class="card"><h2>Weather</h2>' +
       '<div class="hint">Uses GPS to fetch current weather from Open-Meteo. Select "Temperature" or "Weather" in the Indicators section to display weather data.</div>' +
-      '<div class="row"><label for="WeatherUpdateInterval">Update interval</label>' +
-      '<select id="WeatherUpdateInterval">' +
-      optionTags([{ label: '15 minutes', value: 15 }, { label: '30 minutes', value: 30 }, { label: '60 minutes', value: 60 }]) +
-      '</select></div>' + toggleRow('WeatherUseCelsius') +
+      '<div class="row"><label>Update interval</label>' +
+      '<button type="button" class="pick" id="WeatherUpdateInterval_pick"></button></div>' + toggleRow('WeatherUseCelsius') +
       '<div class="hint">Weather condition abbreviations<br>' + cfg.abbreviations.map(esc).join('<br>') + '</div></div>' +
     '<div class="ov" id="ov"><div class="sheet"><div class="grab"></div><div class="st"><span id="sheetTitle"></span><button type="button" class="x" id="sheetClose" aria-label="Close">\u2715</button></div><div class="sb" id="sheetBody"></div></div></div>' +
     '<div class="bar"><button id="save">Save</button></div>';
