@@ -1,7 +1,66 @@
-var Clay = require('@rebble/clay');
-var clayConfig = require('./config');
+var cfg = require('./config');
+var configPage = require('./config-page');
 
-var clay = new Clay(clayConfig);
+var STORAGE_KEY = 'arcs-settings';
+
+function loadSettings() {
+  var saved = {};
+  try {
+    // Fall back to settings previously saved by Clay so users keep their config
+    saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem('clay-settings') || '{}');
+  } catch (e) {}
+  var s = {};
+  for (var k in cfg.defaults) {
+    s[k] = (saved[k] !== undefined && saved[k] !== null) ? saved[k] : cfg.defaults[k];
+  }
+  // Clay stored colours as ints/hex strings; normalise to 6-digit hex
+  ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'].forEach(function(q) {
+    var c = s[q + '_Colour'];
+    if (typeof c === 'number') c = ('000000' + c.toString(16)).slice(-6);
+    s[q + '_Colour'] = String(c).replace('#', '');
+  });
+  return s;
+}
+
+function toWire(s) {
+  var m = {};
+  ['DarkTheme', 'BatteryIndicator', 'QuietTimeIndicator', 'DisconnectIndicator',
+   'OutlinedArcs', 'ShowIndicatorText', 'WeatherUseCelsius'].forEach(function(k) {
+    m[k] = s[k] ? 1 : 0;
+  });
+  ['IndicatorWidth', 'WeatherUpdateInterval', 'TopLeft_Option', 'TopRight_Option',
+   'BottomLeft_Option', 'BottomRight_Option'].forEach(function(k) {
+    m[k] = parseInt(s[k], 10);
+  });
+  ['TopLeft_Colour', 'TopRight_Colour', 'BottomLeft_Colour', 'BottomRight_Colour'].forEach(function(k) {
+    m[k] = parseInt(s[k], 16);
+  });
+  // The watch parses these with atoi(cstring), so send them as strings
+  ['StepGoal', 'HeartRateLower', 'HeartRateUpper', 'CalorieGoal', 'DistanceGoal',
+   'TemperatureLower', 'TemperatureUpper'].forEach(function(k) {
+    var n = parseInt(s[k], 10);
+    m[k] = String(isNaN(n) ? cfg.defaults[k] : n);
+  });
+  return m;
+}
+
+Pebble.addEventListener('showConfiguration', function() {
+  var html = configPage.build(loadSettings());
+  Pebble.openURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+});
+
+Pebble.addEventListener('webviewclosed', function(e) {
+  if (!e || !e.response) return;
+  var settings;
+  try { settings = JSON.parse(decodeURIComponent(e.response)); } catch (err) {
+    console.log('Bad config response: ' + err.message);
+    return;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  Pebble.sendAppMessage(toWire(loadSettings()),
+    function() { console.log('Config sent'); },
+    function(err) { console.log('Config send failed: ' + JSON.stringify(err)); });
+});
 
 // ---------------------------------------------------------------------------
 // XHR helper

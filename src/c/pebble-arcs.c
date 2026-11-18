@@ -82,7 +82,7 @@ static void goals_load(void) {
 // App message
 // ---------------------------------------------------------------------------
 
-// Clay may send any field as CSTRING rather than INT depending on the control
+// The config page may send any field as CSTRING rather than INT depending on the control
 // type (select, input). Parse whichever representation actually arrived.
 static int tuple_int(const Tuple *t) {
   if (t->type == TUPLE_CSTRING) return atoi(t->value->cstring);
@@ -184,7 +184,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     design_layer_apply_theme();
   }
 
-  // Quadrant options (Clay select fields arrive as CSTRING, e.g. "5\0\0\0")
+  // Quadrant options (config select fields arrive as CSTRING, e.g. "5\0\0\0")
   t = dict_find(iter, MESSAGE_KEY_TopLeft_Option);
   if (t) quadrants_set_option(QUADRANT_NW, tuple_int(t));
 
@@ -197,7 +197,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_BottomRight_Option);
   if (t) quadrants_set_option(QUADRANT_SE, tuple_int(t));
 
-  // Quadrant arc colours (Clay sends 24-bit RGB hex as int32, use GColorFromHEX to convert)
+  // Quadrant arc colours (config page sends 24-bit RGB hex as int32, use GColorFromHEX to convert)
   t = dict_find(iter, MESSAGE_KEY_TopLeft_Colour);
   if (t) quadrants_set_color(QUADRANT_NW, GColorFromHEX(t->value->int32));
 
@@ -210,7 +210,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_BottomRight_Colour);
   if (t) quadrants_set_color(QUADRANT_SE, GColorFromHEX(t->value->int32));
 
-  // Goals (Clay input fields send strings)
+  // Goals (config inputs send strings)
   t = dict_find(iter, MESSAGE_KEY_StepGoal);
   if (t) { step_goal    = atoi(t->value->cstring); goals_changed = true; }
 
@@ -252,7 +252,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     metrics_set_distance_goal(val);
   }
 
-  // Weather configuration from Clay
+  // Weather configuration from config page
   t = dict_find(iter, MESSAGE_KEY_WeatherUseCelsius);
   if (t) {
     bool celsius = t->value->int32 != 0;

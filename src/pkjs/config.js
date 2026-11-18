@@ -70,254 +70,38 @@ let abbreviations = [
   "RAIN: Rain", 
   "SNOW: Snow", 
   "STRM: Storm"
-].map(x => `<br/>${x}`).toString()
+]
 
-module.exports = [
-  {
-    type: 'heading',
-    defaultValue: 'ARCs',
-    size: 2,
+
+module.exports = {
+  options: options,
+  colorLayout: COLOR_LAYOUT,
+  abbreviations: abbreviations,
+  isColorWatch: isColorWatch,
+  defaults: {
+    DarkTheme: DEFAULT_DARK_THEME,
+    BatteryIndicator: DEFAULT_STANDALONE_BATTERY_PERCENTAGE,
+    QuietTimeIndicator: true,
+    DisconnectIndicator: true,
+    OutlinedArcs: DEFAULT_OUTLINED_ARCS,
+    ShowIndicatorText: true,
+    IndicatorWidth: DEFAULT_INDICATOR_WIDTH,
+    TopLeft_Colour: DEFAULT_TOP_LEFT_COLOUR,
+    TopLeft_Option: DEFAULT_TOP_LEFT_OPTION,
+    TopRight_Colour: DEFAULT_TOP_RIGHT_COLOUR,
+    TopRight_Option: DEFAULT_TOP_RIGHT_OPTION,
+    BottomLeft_Colour: DEFAULT_BOTTOM_LEFT_COLOUR,
+    BottomLeft_Option: DEFAULT_BOTTOM_LEFT_OPTION,
+    BottomRight_Colour: DEFAULT_BOTTOM_RIGHT_COLOUR,
+    BottomRight_Option: DEFAULT_BOTTOM_RIGHT_OPTION,
+    StepGoal: DEFAULT_STEP_GOAL,
+    HeartRateLower: DEFAULT_HEART_RATE_LOWERBOUND,
+    HeartRateUpper: DEFAULT_HEART_RATE_UPPERBOUND,
+    CalorieGoal: DEFAULT_CALORIE_GOAL,
+    DistanceGoal: DEFAULT_DISTANCE_GOAL,
+    TemperatureLower: DEFAULT_TEMPERATURE_LOWER,
+    TemperatureUpper: DEFAULT_TEMPERATURE_UPPER,
+    WeatherUpdateInterval: DEFAULT_WEATHER_UPDATE_INTERVAL,
+    WeatherUseCelsius: DEFAULT_WEATHER_USE_CELSIUS,
   },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'heading',
-        defaultValue: 'Theme',
-      },
-      {
-        type: 'toggle',
-        messageKey: 'DarkTheme',
-        label: 'Dark Theme',
-        defaultValue: DEFAULT_DARK_THEME,
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'heading',
-        defaultValue: 'Standalone Battery Indicator',
-      },
-      {
-        type: 'text',
-        defaultValue: 'Show a standalone battery indicator beneath the date',
-      },
-      {
-        type: 'toggle',
-        messageKey: 'BatteryIndicator',
-        label: 'Show battery bar',
-        defaultValue: DEFAULT_STANDALONE_BATTERY_PERCENTAGE,
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'heading',
-        defaultValue: 'Statuses',
-      },
-      {
-        type: 'text',
-        defaultValue: 'Show status indicators on the watchface edges',
-      },
-      {
-        type: 'toggle',
-        messageKey: 'QuietTimeIndicator',
-        label: 'Show quiet-time indicator (right)',
-        defaultValue: true,
-      },
-      {
-        type: 'toggle',
-        messageKey: 'DisconnectIndicator',
-        label: 'Show disconnection indicator (left)',
-        defaultValue: true,
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'heading',
-        defaultValue: 'Style',
-      },
-      {
-        type: 'toggle',
-        messageKey: 'OutlinedArcs',
-        label: 'Outlined arc borders',
-        defaultValue: DEFAULT_OUTLINED_ARCS,
-      },
-      {
-        type: 'heading',
-        defaultValue: 'Indicators',
-      },
-      {
-        type: 'toggle',
-        messageKey: 'ShowIndicatorText',
-        label: 'Show indicator text',
-        defaultValue: true,
-      },
-      {
-        type: 'slider',
-        messageKey: 'IndicatorWidth',
-        label: 'Indicator Width',
-        defaultValue: DEFAULT_INDICATOR_WIDTH,
-        min: 1,
-        max: 20,
-        step: 1,
-      },
-      {
-        type: "color",
-        messageKey: "TopLeft_Colour",
-        defaultValue: DEFAULT_TOP_LEFT_COLOUR,
-        layout: COLOR_LAYOUT,
-        label: "Top Left - Color",
-      },
-      {
-        type: "select",
-        messageKey: "TopLeft_Option",
-        defaultValue: DEFAULT_TOP_LEFT_OPTION,
-        label: "Top Left - Data",
-        options: options
-      },
-      {
-        type: "color",
-        messageKey: "TopRight_Colour",
-        defaultValue: DEFAULT_TOP_RIGHT_COLOUR,
-        layout: COLOR_LAYOUT,
-        label: "Top Right - Color",
-      },
-      {
-        type: "select",
-        messageKey: "TopRight_Option",
-        defaultValue: DEFAULT_TOP_RIGHT_OPTION,
-        label: "Top Right - Data",
-        options: options
-      },
-      {
-        type: "color",
-        messageKey: "BottomLeft_Colour",
-        defaultValue: DEFAULT_BOTTOM_LEFT_COLOUR,
-        layout: COLOR_LAYOUT,
-        label: "Bottom Left - Color",
-      },
-      {
-        type: "select",
-        messageKey: "BottomLeft_Option",
-        defaultValue: DEFAULT_BOTTOM_LEFT_OPTION,
-        label: "Bottom Left - Data",
-        options: options
-      },
-      {
-        type: "color",
-        messageKey: "BottomRight_Colour",
-        defaultValue: DEFAULT_BOTTOM_RIGHT_COLOUR,
-        layout: COLOR_LAYOUT,
-        label: "Bottom Right - Color",
-      },
-      {
-        type: "select",
-        messageKey: "BottomRight_Option",
-        defaultValue: DEFAULT_BOTTOM_RIGHT_OPTION,
-        label: "Bottom Right - Data",
-        options: options
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'heading',
-        defaultValue: 'Configuration',
-      },
-      {
-        type: 'text',
-        defaultValue: 'For the relevant indicators above, set goals and bounds here',
-      },
-      {
-        type: "input",
-        messageKey: "StepGoal",
-        label: "Steps Goal",
-        defaultValue: DEFAULT_STEP_GOAL
-      },
-      {
-        type: "input",
-        messageKey: "HeartRateLower",
-        label: "Heart Rate lower bound",
-        defaultValue: DEFAULT_HEART_RATE_LOWERBOUND,
-      },
-      {
-        type: "input",
-        messageKey: "HeartRateUpper",
-        label: "Heart Rate upper bound",
-        defaultValue: DEFAULT_HEART_RATE_UPPERBOUND,
-      },
-      {
-        type: "input",
-        messageKey: "CalorieGoal",
-        label: "Calorie Goal",
-        defaultValue: DEFAULT_CALORIE_GOAL,
-      },
-      {
-        type: "input",
-        messageKey: "DistanceGoal",
-        label: "Distance Goal (metres)",
-        defaultValue: DEFAULT_DISTANCE_GOAL,
-      },
-      {
-        type: "input",
-        messageKey: "TemperatureLower",
-        label: "Temperature lower bound",
-        defaultValue: DEFAULT_TEMPERATURE_LOWER,
-      },
-      {
-        type: "input",
-        messageKey: "TemperatureUpper",
-        label: "Temperature upper bound",
-        defaultValue: DEFAULT_TEMPERATURE_UPPER,
-      }
-    ]
-  },
-  {
-    type: 'section',
-    items: [
-      {
-        type: 'heading',
-        defaultValue: 'Weather',
-      },
-      {
-        type: 'text',
-        defaultValue: 'Uses GPS to fetch current weather from Open-Meteo. Select "Temperature" or "Weather" in the Indicators section to display weather data.',
-      },
-      {
-        type: 'select',
-        messageKey: 'WeatherUpdateInterval',
-        label: 'Update interval',
-        defaultValue: DEFAULT_WEATHER_UPDATE_INTERVAL,
-        options: [
-          { label: '15 minutes', value: 15 },
-          { label: '30 minutes', value: 30 },
-          { label: '60 minutes', value: 60 },
-        ],
-      },
-      {
-        type: 'toggle',
-        messageKey: 'WeatherUseCelsius',
-        label: 'Use Celsius',
-        defaultValue: DEFAULT_WEATHER_USE_CELSIUS,
-      },
-      {
-        type: 'text',
-        defaultValue: `Weather condition abbrevations${abbreviations}`,
-      }
-    ]
-  },
-  {
-    type: 'submit',
-    defaultValue: 'Save',
-  },
-];
+};
