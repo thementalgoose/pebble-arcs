@@ -1,6 +1,5 @@
 #include <pebble.h>
 #include <message_keys.auto.h>
-#include "battery.h"
 #include "constants.h"
 #include "date.h"
 #include "design.h"
@@ -44,7 +43,6 @@ static void theme_apply(bool dark) {
     window_set_background_color(s_window, g_color_background);
     time_layer_apply_theme();
     date_layer_apply_theme();
-    battery_layer_apply_theme();
     design_layer_apply_theme();
     indicators_layer_apply_theme();
   }
@@ -139,14 +137,6 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   // Theme
   t = dict_find(iter, MESSAGE_KEY_DarkTheme);
   if (t) theme_apply(t->value->int32 != 0);
-
-  // Standalone battery indicator
-  t = dict_find(iter, MESSAGE_KEY_BatteryIndicator);
-  if (t) {
-    bool show = t->value->int32 != 0;
-    persist_write_bool(MESSAGE_KEY_BatteryIndicator, show);
-    battery_layer_set_visible(show);
-  }
 
   // Quiet time indicator (right triangle)
   t = dict_find(iter, MESSAGE_KEY_QuietTimeIndicator);
@@ -271,6 +261,29 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_PhoneBattery);
   if (t) metrics_set_phone_battery(tuple_signed_int(t));
 
+  // Complication slots (percent < 0 = unsupported / no permission)
+  {
+    const uint32_t pct_keys[COMPLICATION_SLOTS] = {
+      MESSAGE_KEY_Complication1_Percent, MESSAGE_KEY_Complication2_Percent,
+      MESSAGE_KEY_Complication3_Percent, MESSAGE_KEY_Complication4_Percent,
+      MESSAGE_KEY_Complication5_Percent };
+    const uint32_t label_keys[COMPLICATION_SLOTS] = {
+      MESSAGE_KEY_Complication1_Label, MESSAGE_KEY_Complication2_Label,
+      MESSAGE_KEY_Complication3_Label, MESSAGE_KEY_Complication4_Label,
+      MESSAGE_KEY_Complication5_Label };
+    for (int s = 0; s < COMPLICATION_SLOTS; s++) {
+      Tuple *pt = dict_find(iter, pct_keys[s]);
+      Tuple *lt = dict_find(iter, label_keys[s]);
+      if (pt && lt && lt->type == TUPLE_CSTRING) {
+        metrics_set_complication(s + 1, tuple_signed_int(pt), lt->value->cstring);
+      }
+    }
+  }
+
+  // Animate indicator changes
+  t = dict_find(iter, MESSAGE_KEY_AnimateIndicators);
+  if (t) indicators_set_animated(t->value->int32 != 0);
+
   t = dict_find(iter, MESSAGE_KEY_WeatherCondition);
   if (t) weather_set_condition((int)t->value->int32);
 
@@ -294,7 +307,6 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 static void battery_handler(BatteryChargeState state) {
-  battery_layer_set(state.charge_percent);
   quadrants_render_all();
 }
 
@@ -322,7 +334,6 @@ static void window_load(Window *window) {
   design_layer_create(root);
   indicators_layer_create(root);
   date_layer_create(root);
-  battery_layer_create(root);
   time_layer_create(root);
 
   time_t now = time(NULL);
@@ -330,11 +341,6 @@ static void window_load(Window *window) {
   time_layer_update(t);
   date_layer_update(t);
 
-  battery_layer_set(battery_state_service_peek().charge_percent);
-  battery_layer_set_visible(
-    persist_exists(MESSAGE_KEY_BatteryIndicator)
-      ? persist_read_bool(MESSAGE_KEY_BatteryIndicator) : true
-  );
   design_layer_set_connected(connection_service_peek_pebble_app_connection());
   quadrants_render_all();
 }
@@ -342,7 +348,6 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
   time_layer_destroy();
   date_layer_destroy();
-  battery_layer_destroy();
   design_layer_destroy();
   indicators_layer_destroy();
 }

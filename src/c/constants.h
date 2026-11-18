@@ -80,17 +80,6 @@
 #define INDICATOR_TEXT_INSET    7
 #define INNER_TEXT_PADDING      4
 
-// Layout - Battery
-#if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
-#define BATTERY_BAR_HEIGHT      2
-#define BATTERY_BAR_WIDTH       30
-#define BATTERY_BAR_INSET       12
-#else
-#define BATTERY_BAR_HEIGHT      2
-#define BATTERY_BAR_WIDTH       20
-#define BATTERY_BAR_INSET       10
-#endif
-
 // ---------------------------------------------------------------------------
 // Themes — runtime color globals (set by theme_apply in pebble-arcs.c)
 // ---------------------------------------------------------------------------

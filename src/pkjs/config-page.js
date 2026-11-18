@@ -39,11 +39,18 @@ var CSS = [
   'border-radius:18px 18px 0 0;transform:translateY(100%);transition:transform .25s ease;z-index:11}',
   '.ov.open .sheet{transform:translateY(0)}',
   '.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:10px auto 6px;flex:none}',
-  '.sheet .st{padding:4px 20px 10px;font-weight:600;font-size:17px;flex:none;border-bottom:1px solid var(--line)}',
+  '.sheet .st{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 10px 20px;font-weight:600;font-size:17px;flex:none;border-bottom:1px solid var(--line)}',
+  '.sheet .x{width:36px;height:36px;border:0;border-radius:50%;background:var(--bg);color:var(--muted);font-size:16px;line-height:1}',
+  '.sheet .x:active{opacity:.7}',
   '.sheet .sb{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 8px 24px}',
   '.sec{padding:16px 12px 6px;font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent)}',
   '.opt{display:flex;justify-content:space-between;align-items:center;padding:13px 12px;border-radius:10px}',
   '.opt:active{background:var(--bg)}',
+  '.opt .ot{display:flex;flex-direction:column;gap:2px}',
+  '.opt small{color:var(--muted);font-size:12px}',
+  '.opt small.why{color:#e5534b}',
+  '.opt.off{opacity:.6}',
+  '.opt.off span{text-decoration:none}',
   '.opt.on{color:var(--accent);font-weight:600}',
   '.opt.on:after{content:"\\2713"}',
   'body.lock{overflow:hidden}',
@@ -64,10 +71,15 @@ var SCRIPT = [
   'function closeSheet(){ov.className="ov";document.body.classList.remove("lock");cur=null}',
   'function openSheet(i){cur=i;var q=D.quads[i],key=q+"_Option";$("sheetTitle").textContent=D.quadNames[i];sb.innerHTML="";',
   ' D.sections.forEach(function(s){var h=document.createElement("div");h.className="sec";h.textContent=s.title;sb.appendChild(h);',
-  '  s.options.forEach(function(o){var r=document.createElement("div");r.className="opt"+(S[key]===o.value?" on":"");',
-  '   var t=document.createElement("span");t.textContent=o.label;r.appendChild(t);',
-  '   r.onclick=function(){S[key]=o.value;$(q+"_pick").textContent=o.label;closeSheet()};sb.appendChild(r)})});',
+  '  s.options.forEach(function(o){var st=D.status[o.value]||{},off=st.enabled===false;',
+  '   var r=document.createElement("div");r.className="opt"+(S[key]===o.value?" on":"")+(off?" off":"");',
+  '   var t=document.createElement("div");t.className="ot";var l=document.createElement("span");l.textContent=o.label;t.appendChild(l);',
+  '   if(st.detail){var d=document.createElement("small");d.textContent=st.detail;t.appendChild(d)}',
+  '   if(off&&st.reason){var w=document.createElement("small");w.className="why";w.textContent=st.reason;t.appendChild(w)}',
+  '   r.appendChild(t);if(off)r.setAttribute("aria-disabled","true");',
+  '   r.onclick=function(){if(off)return;S[key]=o.value;$(q+"_pick").textContent=o.label;closeSheet()};sb.appendChild(r)})});',
   ' sb.scrollTop=0;document.body.classList.add("lock");ov.className="ov open"}',
+  '$("sheetClose").onclick=closeSheet;',
   'ov.onclick=function(e){if(e.target===ov)closeSheet()};',
   'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeSheet()});',
   'D.quads.forEach(function(q,i){S[q+"_Option"]=parseInt(S[q+"_Option"],10);$(q+"_pick").textContent=label(S[q+"_Option"]);$(q+"_pick").onclick=function(){openSheet(i)}});',
@@ -89,11 +101,11 @@ function esc(s) {
 
 var TOGGLES = [
   ['DarkTheme', 'Dark Theme'],
-  ['BatteryIndicator', 'Show battery bar'],
   ['QuietTimeIndicator', 'Show quiet-time indicator (right)'],
   ['DisconnectIndicator', 'Show disconnection indicator (left)'],
   ['OutlinedArcs', 'Outlined arc borders'],
   ['ShowIndicatorText', 'Show indicator text'],
+  ['AnimateIndicators', 'Animate indicators'],
   ['WeatherUseCelsius', 'Use Celsius']
 ];
 var QUADS = [
@@ -122,7 +134,7 @@ function optionTags(opts) {
   }).join('');
 }
 
-function build(settings) {
+function build(settings, pluginStatus) {
   var palette = [];
   if (cfg.isColorWatch) {
     cfg.colorLayout.forEach(function(r) { r.forEach(function(c) { if (c) palette.push(c); }); });
@@ -150,6 +162,7 @@ function build(settings) {
     nums: NUMS.map(function(n) { return n[0]; }),
     quads: QUADS.map(function(q) { return q[0]; }),
     palette: palette,
+    status: pluginStatus || {},
     quadNames: QUADS.map(function(q) { return q[1]; }),
     sections: [
       { title: 'Indicators', options: cfg.indicatorOptions },
@@ -161,13 +174,10 @@ function build(settings) {
   var body =
     '<h1>ARCs</h1>' +
     '<div class="card"><h2>Theme</h2>' + toggleRow('DarkTheme') + '</div>' +
-    '<div class="card"><h2>Standalone Battery Indicator</h2>' +
-      '<div class="hint">Show a standalone battery indicator beneath the date</div>' +
-      toggleRow('BatteryIndicator') + '</div>' +
     '<div class="card"><h2>Statuses</h2>' +
       '<div class="hint">Show status indicators on the watchface edges</div>' +
       toggleRow('QuietTimeIndicator') + toggleRow('DisconnectIndicator') + '</div>' +
-    '<div class="card"><h2>Style</h2>' + toggleRow('OutlinedArcs') + '</div>' +
+    '<div class="card"><h2>Style</h2>' + toggleRow('OutlinedArcs') + toggleRow('AnimateIndicators') + '</div>' +
     '<div class="card"><h2>Indicators</h2>' + toggleRow('ShowIndicatorText') +
       '<div class="row"><label for="IndicatorWidth">Indicator Width</label>' +
       '<input type="range" id="IndicatorWidth" min="1" max="20" step="1">' +
@@ -181,7 +191,7 @@ function build(settings) {
       optionTags([{ label: '15 minutes', value: 15 }, { label: '30 minutes', value: 30 }, { label: '60 minutes', value: 60 }]) +
       '</select></div>' + toggleRow('WeatherUseCelsius') +
       '<div class="hint">Weather condition abbreviations<br>' + cfg.abbreviations.map(esc).join('<br>') + '</div></div>' +
-    '<div class="ov" id="ov"><div class="sheet"><div class="grab"></div><div class="st" id="sheetTitle"></div><div class="sb" id="sheetBody"></div></div></div>' +
+    '<div class="ov" id="ov"><div class="sheet"><div class="grab"></div><div class="st"><span id="sheetTitle"></span><button type="button" class="x" id="sheetClose" aria-label="Close">\u2715</button></div><div class="sb" id="sheetBody"></div></div></div>' +
     '<div class="bar"><button id="save">Save</button></div>';
 
   return '<!DOCTYPE html><html><head><meta charset="utf-8">' +

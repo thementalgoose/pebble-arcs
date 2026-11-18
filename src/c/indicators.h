@@ -19,3 +19,6 @@ void indicators_set_width(int width);
 
 // Bind label text, arc fill percent (0–100), and arc colour to a quadrant.
 void indicators_set(Quadrant q, const char *label, int percent, GColor color);
+
+// Enable/disable the short sweep animation when a value changes (persisted).
+void indicators_set_animated(bool animated);

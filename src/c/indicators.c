@@ -10,6 +10,59 @@ static int    s_pct[QUADRANT_COUNT];
 static GColor s_color[QUADRANT_COUNT];
 static int    s_indicator_width = -1;
 
+// Sweep animation state: s_pct is what is drawn, s_target is where it ends up.
+#define ANIM_DURATION_MS 300
+static int        s_target[QUADRANT_COUNT];
+static int        s_from[QUADRANT_COUNT];
+static Animation *s_anim;
+
+static bool animate_enabled(void) {
+  return persist_exists(MESSAGE_KEY_AnimateIndicators)
+    ? persist_read_bool(MESSAGE_KEY_AnimateIndicators)
+    : false;
+}
+
+static void anim_update(Animation *anim, AnimationProgress progress) {
+  for (int q = 0; q < QUADRANT_COUNT; q++) {
+    s_pct[q] = s_from[q] + (s_target[q] - s_from[q]) * (int)progress / ANIMATION_NORMALIZED_MAX;
+  }
+  if (s_layer) layer_mark_dirty(s_layer);
+}
+
+static void anim_teardown(Animation *anim) {
+  for (int q = 0; q < QUADRANT_COUNT; q++) s_pct[q] = s_target[q];
+  s_anim = NULL;
+  if (s_layer) layer_mark_dirty(s_layer);
+}
+
+static const AnimationImplementation s_anim_impl = {
+  .update = anim_update,
+  .teardown = anim_teardown,
+};
+
+static void start_sweep(void) {
+  // Remember what is currently drawn: unscheduling snaps s_pct to the targets
+  int drawn[QUADRANT_COUNT];
+  for (int q = 0; q < QUADRANT_COUNT; q++) drawn[q] = s_pct[q];
+  if (s_anim) animation_unschedule(s_anim);
+  bool any = false;
+  for (int q = 0; q < QUADRANT_COUNT; q++) {
+    s_from[q] = drawn[q];
+    if (s_from[q] != s_target[q]) any = true;
+  }
+  if (!any) return;
+  s_anim = animation_create();
+  animation_set_duration(s_anim, ANIM_DURATION_MS);
+  animation_set_curve(s_anim, AnimationCurveEaseInOut);
+  animation_set_implementation(s_anim, &s_anim_impl);
+  animation_schedule(s_anim);
+}
+
+void indicators_set_animated(bool animated) {
+  persist_write_bool(MESSAGE_KEY_AnimateIndicators, animated);
+  if (!animated && s_anim) animation_unschedule(s_anim);
+}
+
 int indicators_get_width(void) {
   if (s_indicator_width < 0) {
     s_indicator_width = persist_exists(MESSAGE_KEY_IndicatorWidth)
@@ -359,12 +412,19 @@ void indicators_set(Quadrant q, const char *label, int percent, GColor color) {
   int new_pct = CLAMP(percent, 0, 100);
   GColor new_color = color;
 
-  bool changed = (strcmp(s_text[q], new_text) != 0) || (s_pct[q] != new_pct) || (s_color[q].argb != new_color.argb);
+  bool changed = (strcmp(s_text[q], new_text) != 0) || (s_target[q] != new_pct) || (s_color[q].argb != new_color.argb);
   if (changed) {
+    bool pct_changed = s_target[q] != new_pct;
     snprintf(s_text[q], sizeof(s_text[q]), "%s", new_text);
-    s_pct[q] = new_pct;
+    s_target[q] = new_pct;
     s_color[q] = new_color;
-    if (s_layer) layer_mark_dirty(s_layer);
+    if (pct_changed && s_layer && animate_enabled()) {
+      start_sweep();
+    } else {
+      if (s_anim) animation_unschedule(s_anim);
+      s_pct[q] = new_pct;
+      if (s_layer) layer_mark_dirty(s_layer);
+    }
   }
 }
 
@@ -373,6 +433,7 @@ void indicators_layer_create(Layer *root) {
   for (int q = 0; q < QUADRANT_COUNT; q++) {
     s_text[q][0] = '\0';
     s_pct[q]     = 0;
+    s_target[q]  = 0;
     s_color[q]   = BAR_COLOR;
   }
   s_layer = layer_create(bounds);
@@ -385,6 +446,7 @@ void indicators_layer_apply_theme(void) {
 }
 
 void indicators_layer_destroy(void) {
+  if (s_anim) animation_unschedule(s_anim);
   layer_destroy(s_layer);
   s_layer = NULL;
 }

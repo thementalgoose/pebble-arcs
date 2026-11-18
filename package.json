@@ -31,7 +31,6 @@
     },
     "messageKeys": [
       "DarkTheme",
-      "BatteryIndicator",
       "QuietTimeIndicator",
       "DisconnectIndicator",
       "OutlinedArcs",
@@ -57,7 +56,18 @@
       "TemperatureLower",
       "TemperatureUpper",
       "DistanceGoal",
-      "PhoneBattery"
+      "PhoneBattery",
+      "Complication1_Percent",
+      "Complication1_Label",
+      "Complication2_Percent",
+      "Complication2_Label",
+      "Complication3_Percent",
+      "Complication3_Label",
+      "Complication4_Percent",
+      "Complication4_Label",
+      "Complication5_Percent",
+      "Complication5_Label",
+      "AnimateIndicators"
     ],
     "resources": {
       "media": [
@@ -105,6 +115,16 @@
       {
         "name": "Health",
         "reason": "To show steps, heart rate and calories",
+        "required": false
+      },
+      {
+        "name": "Calendar",
+        "reason": "To show calendar events from your complications",
+        "required": false
+      },
+      {
+        "name": "ReadMusic",
+        "reason": "To show music info from your complications",
         "required": false
       }
     ]

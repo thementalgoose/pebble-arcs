@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include <string.h>
 #include "metrics.h"
 #include "constants.h"
 #include "weather.h"
@@ -16,6 +17,24 @@ static int s_distance_goal = 5000;
 static const uint32_t PERSIST_KEY_CACHED_PHONE_BATTERY = 0xFEF1;
 static int s_cached_heart_rate = -1;
 static int s_phone_battery = -1;
+
+static const uint32_t PERSIST_KEY_COMPLICATION_PCT   = 0xFF00;  // + slot
+static const uint32_t PERSIST_KEY_COMPLICATION_LABEL = 0xFF10;  // + slot
+static int  s_comp_pct[COMPLICATION_SLOTS + 1];
+static char s_comp_label[COMPLICATION_SLOTS + 1][8];
+
+void metrics_set_complication(int slot, int percent, const char *label) {
+  if (slot < 1 || slot > COMPLICATION_SLOTS) return;
+  if (percent > 100) percent = 100;
+  if (percent < COMPLICATION_NO_PERMISSION) percent = COMPLICATION_UNSUPPORTED;
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%s", label ? label : "");
+  if (s_comp_pct[slot] == percent && strcmp(s_comp_label[slot], buf) == 0) return;
+  s_comp_pct[slot] = percent;
+  snprintf(s_comp_label[slot], sizeof(s_comp_label[slot]), "%s", buf);
+  persist_write_int(PERSIST_KEY_COMPLICATION_PCT + slot, percent);
+  persist_write_string(PERSIST_KEY_COMPLICATION_LABEL + slot, buf);
+}
 
 void metrics_set_phone_battery(int percent) {
   if (percent > 100) percent = 100;
@@ -36,6 +55,16 @@ static void metrics_cache_heart_rate(int bpm) {
 }
 
 void metrics_restore_cached_values(void) {
+  for (int s = 1; s <= COMPLICATION_SLOTS; s++) {
+    s_comp_pct[s] = COMPLICATION_UNSUPPORTED;
+    snprintf(s_comp_label[s], sizeof(s_comp_label[s]), "--");
+    if (persist_exists(PERSIST_KEY_COMPLICATION_PCT + s) &&
+        persist_exists(PERSIST_KEY_COMPLICATION_LABEL + s)) {
+      s_comp_pct[s] = persist_read_int(PERSIST_KEY_COMPLICATION_PCT + s);
+      persist_read_string(PERSIST_KEY_COMPLICATION_LABEL + s,
+                          s_comp_label[s], sizeof(s_comp_label[s]));
+    }
+  }
   if (persist_exists(PERSIST_KEY_CACHED_PHONE_BATTERY)) {
     s_phone_battery = persist_read_int(PERSIST_KEY_CACHED_PHONE_BATTERY);
   }
@@ -127,6 +156,19 @@ MetricResult metrics_fetch(MetricOption option) {
         snprintf(r.label, sizeof(r.label), "%d%%", s_phone_battery);
         r.percent = s_phone_battery;
       }
+      break;
+    }
+    case METRIC_COMPLICATION_1:
+    case METRIC_COMPLICATION_2:
+    case METRIC_COMPLICATION_3:
+    case METRIC_COMPLICATION_4:
+    case METRIC_COMPLICATION_5: {
+      int slot = (int)option - METRIC_COMPLICATION_1 + 1;
+      // Before the first value arrives the label stays "--" with an empty arc
+      if (s_comp_label[slot][0] != '\0') {
+        snprintf(r.label, sizeof(r.label), "%s", s_comp_label[slot]);
+      }
+      r.percent = CLAMP(s_comp_pct[slot], 0, 100);
       break;
     }
     case METRIC_HEART_RATE: {
