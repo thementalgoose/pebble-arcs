@@ -7,7 +7,6 @@
   ],
   "private": true,
   "dependencies": {
-    "@rebble/clay": "^1.0.8"
   },
   "pebble": {
     "displayName": "ARCs",
