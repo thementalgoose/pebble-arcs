@@ -6,15 +6,16 @@
     "pebble-app"
   ],
   "private": true,
-  "dependencies": {
-  },
+  "dependencies": {},
   "pebble": {
     "displayName": "ARCs",
     "uuid": "0122e256-9254-4bbd-9079-f4afd0819b1a",
     "sdkVersion": "3",
+    "manifestVersion": 2,
     "enableMultiJS": true,
-    "capabilities": [ 
-      "health" 
+    "capabilities": [
+      "health",
+      "configurable"
     ],
     "targetPlatforms": [
       "aplite",
@@ -30,7 +31,6 @@
     },
     "messageKeys": [
       "DarkTheme",
-      "BatteryIndicator",
       "QuietTimeIndicator",
       "DisconnectIndicator",
       "OutlinedArcs",
@@ -55,7 +55,19 @@
       "WeatherUseCelsius",
       "TemperatureLower",
       "TemperatureUpper",
-      "DistanceGoal"
+      "DistanceGoal",
+      "PhoneBattery",
+      "Complication1_Percent",
+      "Complication1_Label",
+      "Complication2_Percent",
+      "Complication2_Label",
+      "Complication3_Percent",
+      "Complication3_Label",
+      "Complication4_Percent",
+      "Complication4_Label",
+      "Complication5_Percent",
+      "Complication5_Label",
+      "AnimateIndicators"
     ],
     "resources": {
       "media": [
@@ -83,6 +95,38 @@
           ]
         }
       ]
-    }
+    },
+    "usesPermissions": [
+      {
+        "name": "Internet",
+        "parameters": {
+          "domains": [
+            "api.open-meteo.com"
+          ]
+        },
+        "reason": "To fetch the current weather",
+        "required": false
+      },
+      {
+        "name": "Location",
+        "reason": "To show the weather where you are",
+        "required": false
+      },
+      {
+        "name": "Health",
+        "reason": "To show steps, heart rate and calories",
+        "required": false
+      },
+      {
+        "name": "Calendar",
+        "reason": "To show calendar events from your complications",
+        "required": false
+      },
+      {
+        "name": "ReadMusic",
+        "reason": "To show music info from your complications",
+        "required": false
+      }
+    ]
   }
 }

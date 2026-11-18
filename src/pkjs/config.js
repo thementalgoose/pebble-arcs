@@ -1,4 +1,4 @@
-let options = [
+let indicatorOptions = [
   { label: "Week of year",   value: 0 },
   { label: "Weekday",        value: 1 },
   { label: "Month",          value: 2 },
@@ -12,8 +12,18 @@ let options = [
   { label: "Weather",        value: 10 },
 ];
 
+// Options backed by Pebble plugin sources (shown under "Plugin Data")
+let pluginOptions = [
+  { label: "Phone Battery", value: 11 },
+  { label: "Complication Slot 1", value: 12 },
+  { label: "Complication Slot 2", value: 13 },
+  { label: "Complication Slot 3", value: 14 },
+  { label: "Complication Slot 4", value: 15 },
+  { label: "Complication Slot 5", value: 16 },
+];
+let options = indicatorOptions.concat(pluginOptions);
+
 let DEFAULT_DARK_THEME = true;
-let DEFAULT_STANDALONE_BATTERY_PERCENTAGE = false;
 
 const activeWatchInfo = (typeof Pebble !== 'undefined' && Pebble.getActiveWatchInfo)
   ? Pebble.getActiveWatchInfo()
@@ -75,16 +85,18 @@ let abbreviations = [
 
 module.exports = {
   options: options,
+  indicatorOptions: indicatorOptions,
+  pluginOptions: pluginOptions,
   colorLayout: COLOR_LAYOUT,
   abbreviations: abbreviations,
   isColorWatch: isColorWatch,
   defaults: {
     DarkTheme: DEFAULT_DARK_THEME,
-    BatteryIndicator: DEFAULT_STANDALONE_BATTERY_PERCENTAGE,
     QuietTimeIndicator: true,
     DisconnectIndicator: true,
     OutlinedArcs: DEFAULT_OUTLINED_ARCS,
     ShowIndicatorText: true,
+    AnimateIndicators: false,
     IndicatorWidth: DEFAULT_INDICATOR_WIDTH,
     TopLeft_Colour: DEFAULT_TOP_LEFT_COLOUR,
     TopLeft_Option: DEFAULT_TOP_LEFT_OPTION,

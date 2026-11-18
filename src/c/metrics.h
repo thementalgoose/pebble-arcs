@@ -14,6 +14,12 @@ typedef enum {
   METRIC_CALORIES    = 8,
   METRIC_TEMPERATURE        = 9,
   METRIC_WEATHER_CONDITION  = 10,
+  METRIC_PHONE_BATTERY      = 11,  // plugin: phone/phone_state battery_level
+  METRIC_COMPLICATION_1     = 12,  // plugin: user's complication slots 1..5
+  METRIC_COMPLICATION_2     = 13,
+  METRIC_COMPLICATION_3     = 14,
+  METRIC_COMPLICATION_4     = 15,
+  METRIC_COMPLICATION_5     = 16,
 } MetricOption;
 
 typedef struct {
@@ -29,6 +35,17 @@ void metrics_set_temperature_bounds(int lower, int upper);
 
 // Update the distance goal used for the arc percentage.
 void metrics_set_distance_goal(int goal);
+
+// Update the phone battery level (0-100, or negative when unavailable).
+void metrics_set_phone_battery(int percent);
+
+#define COMPLICATION_SLOTS 5
+// Complication percent: 0-100, or COMPLICATION_UNSUPPORTED / COMPLICATION_NO_PERMISSION.
+#define COMPLICATION_UNSUPPORTED  (-1)
+#define COMPLICATION_NO_PERMISSION (-2)
+
+// Store a complication slot's display value (slot is 1-based) and persist it.
+void metrics_set_complication(int slot, int percent, const char *label);
 
 // Restore any cached values loaded from persistent storage.
 void metrics_restore_cached_values(void);

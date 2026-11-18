@@ -24,8 +24,8 @@ function loadSettings() {
 
 function toWire(s) {
   var m = {};
-  ['DarkTheme', 'BatteryIndicator', 'QuietTimeIndicator', 'DisconnectIndicator',
-   'OutlinedArcs', 'ShowIndicatorText', 'WeatherUseCelsius'].forEach(function(k) {
+  ['DarkTheme', 'QuietTimeIndicator', 'DisconnectIndicator',
+   'OutlinedArcs', 'ShowIndicatorText', 'WeatherUseCelsius', 'AnimateIndicators'].forEach(function(k) {
     m[k] = s[k] ? 1 : 0;
   });
   ['IndicatorWidth', 'WeatherUpdateInterval', 'TopLeft_Option', 'TopRight_Option',
@@ -44,9 +44,225 @@ function toWire(s) {
   return m;
 }
 
+// ---------------------------------------------------------------------------
+// Plugin data sources (Pebble Plugins preview, mobile app 2.0.0+)
+// ---------------------------------------------------------------------------
+
+var comps = require('./complications');
+
+var QUADRANT_KEYS = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'];
+var OPTION_PHONE_BATTERY = 11;
+var OPTION_COMPLICATION_BASE = 11;   // slot n has option value 11 + n
+var SLOT_COUNT = 5;
+var phoneBatterySub = null;
+var slotSubs = {};
+var lastSent = {};
+
+// Permission a complication's source category needs (others need none)
+var CATEGORY_PERMISSION = { weather: 'Location', calendar: 'Calendar', music: 'ReadMusic' };
+
+function pluginsSupported() {
+  return typeof Pebble.subscribeToSource === 'function';
+}
+
+function sendPhoneBattery(value) {
+  Pebble.sendAppMessage({ PhoneBattery: value },
+    function() { console.log('Phone battery sent: ' + value); },
+    function(e) { console.log('Phone battery send failed: ' + JSON.stringify(e)); });
+}
+
+// Send a slot's display value, but only when it differs from the last one sent
+function emitSlot(n, display) {
+  var key = display.percent + '|' + display.label;
+  if (lastSent[n] === key) return;
+  lastSent[n] = key;
+  var msg = {};
+  msg['Complication' + n + '_Percent'] = display.percent;
+  msg['Complication' + n + '_Label'] = display.label;
+  Pebble.sendAppMessage(msg,
+    function() { console.log('Complication ' + n + ' sent: ' + key); },
+    function(e) { delete lastSent[n]; console.log('Complication ' + n + ' send failed: ' + JSON.stringify(e)); });
+}
+
+function slotEntry(update, n) {
+  var instances = (update && update.instances) || [];
+  for (var i = 0; i < instances.length; i++) {
+    if (String(instances[i].instanceId) === String(n)) {
+      var p = instances[i].properties || {};
+      var text = function(x) { return p[x] && p[x].shortText && p[x].shortText.text; };
+      var idx = p.index && p.index.numericValue ? p.index.numericValue.value : 0;
+      if (!text('category') || !text('item') || !text('property')) return null;
+      return { category: text('category'), item: text('item'), property: text('property'), index: idx };
+    }
+  }
+  return null;
+}
+
+function startSlot(n) {
+  if (slotSubs[n]) return;
+  var inner = null;
+  var innerKey = null;
+  function stopInner() { if (inner) { inner.unsubscribe(); inner = null; } innerKey = null; }
+
+  var outer = Pebble.subscribeToSource({
+    category: 'preferences',
+    item: 'complications',
+    onData: function(update) {
+      var e = slotEntry(update, n);
+      if (!e) { stopInner(); emitSlot(n, comps.UNSUPPORTED); return; }
+      var key = [e.category, e.item, e.property, e.index].join('/');
+      if (key === innerKey) return;
+      stopInner();
+      innerKey = key;
+      inner = Pebble.subscribeToSource({
+        category: e.category,
+        item: e.item,
+        properties: [e.property],
+        onData: function(u) {
+          var inst = u && u.instances && u.instances[e.index];
+          emitSlot(n, comps.toDisplay(inst && inst.properties && inst.properties[e.property]));
+        },
+        onError: function(err) {
+          console.log('Complication ' + n + ' error: ' + (err && err.code));
+          emitSlot(n, err && err.code === 'PERMISSION_DENIED' ? comps.NO_PERMISSION : comps.UNSUPPORTED);
+        }
+      });
+    },
+    onError: function() { emitSlot(n, comps.UNSUPPORTED); }
+  });
+  slotSubs[n] = { stop: function() { stopInner(); outer.unsubscribe(); delete lastSent[n]; } };
+}
+
+function stopSlot(n) {
+  if (slotSubs[n]) { slotSubs[n].stop(); delete slotSubs[n]; }
+}
+
+function syncPluginSubscriptions(settings) {
+  var used = {};
+  QUADRANT_KEYS.forEach(function(q) { used[parseInt(settings[q + '_Option'], 10)] = true; });
+
+  if (!pluginsSupported()) {
+    console.log('Plugins not supported by this Pebble app');
+    if (used[OPTION_PHONE_BATTERY]) sendPhoneBattery(-1);
+    for (var s = 1; s <= SLOT_COUNT; s++) {
+      if (used[OPTION_COMPLICATION_BASE + s]) emitSlot(s, comps.UNSUPPORTED);
+    }
+    return;
+  }
+
+  if (used[OPTION_PHONE_BATTERY] && !phoneBatterySub) {
+    phoneBatterySub = Pebble.subscribeToSource({
+      category: 'phone',
+      item: 'phone_state',
+      properties: ['battery_level'],
+      onData: function(update) {
+        var inst = update && update.instances && update.instances[0];
+        var prop = inst && inst.properties && inst.properties.battery_level;
+        var level = -1;
+        if (prop && prop.numericValue && typeof prop.numericValue.value === 'number') {
+          level = Math.round(prop.numericValue.value);
+        } else if (prop && prop.shortText && prop.shortText.text) {
+          level = parseInt(prop.shortText.text, 10);
+          if (isNaN(level)) level = -1;
+        }
+        sendPhoneBattery(level);
+      },
+      onError: function(err) {
+        console.log('Phone battery error: ' + (err && err.code) + ' ' + (err && err.message));
+        sendPhoneBattery(-1);
+      }
+    });
+  } else if (!used[OPTION_PHONE_BATTERY] && phoneBatterySub) {
+    phoneBatterySub.unsubscribe();
+    phoneBatterySub = null;
+  }
+
+  for (var n = 1; n <= SLOT_COUNT; n++) {
+    if (used[OPTION_COMPLICATION_BASE + n]) startSlot(n); else stopSlot(n);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Config page: which plugin options can be selected right now?
+// Result: { "<optionValue>": { enabled, reason, detail } }
+// ---------------------------------------------------------------------------
+
+function readComplicationEntries(cb) {
+  var done = false;
+  var sub = null;
+  function finish(entries) {
+    if (done) return;
+    done = true;
+    try { if (sub) sub.unsubscribe(); } catch (e) {}
+    cb(entries);
+  }
+  setTimeout(function() { finish(null); }, 2000);
+  try {
+    sub = Pebble.subscribeToSource({
+      category: 'preferences',
+      item: 'complications',
+      onData: function(update) {
+        var entries = {};
+        for (var n = 1; n <= SLOT_COUNT; n++) entries[n] = slotEntry(update, n);
+        finish(entries);
+      },
+      onError: function() { finish(null); }
+    });
+  } catch (e) { finish(null); }
+}
+
+function queryPermission(name) {
+  if (!name || !Pebble.permissions || typeof Pebble.permissions.query !== 'function') {
+    return Promise.resolve('granted');
+  }
+  return Promise.resolve(Pebble.permissions.query(name)).catch(function() { return 'granted'; });
+}
+
+function getPluginStatus(cb) {
+  var status = {};
+  if (!pluginsSupported()) {
+    var reason = "Plugins aren't supported by your Pebble app (needs version 2.0.0 or later).";
+    status[OPTION_PHONE_BATTERY] = { enabled: false, reason: reason };
+    for (var s = 1; s <= SLOT_COUNT; s++) status[OPTION_COMPLICATION_BASE + s] = { enabled: false, reason: reason };
+    cb(status);
+    return;
+  }
+  readComplicationEntries(function(entries) {
+    if (!entries) { cb(status); return; }   // couldn't check: leave everything enabled
+    var pending = [];
+    var slots = [];
+    for (var n = 1; n <= SLOT_COUNT; n++) {
+      (function(n) {
+        var e = entries[n];
+        var opt = OPTION_COMPLICATION_BASE + n;
+        if (!e) {
+          status[opt] = { enabled: false, reason: 'Slot ' + n + ' has no reading. Set one in the Pebble app under Settings \u2192 Plugins \u2192 Complications.' };
+          return;
+        }
+        var detail = e.category + ' \u00b7 ' + e.property;
+        var perm = CATEGORY_PERMISSION[e.category];
+        status[opt] = { enabled: true, detail: detail };
+        pending.push(queryPermission(perm).then(function(state) {
+          if (state === 'denied') {
+            status[opt] = { enabled: false, detail: detail,
+              reason: perm + ' permission is denied for this watchface. Allow it in the Pebble app to use this reading.' };
+          }
+        }));
+      })(n);
+    }
+    Promise.all(pending).then(function() { cb(status); }, function() { cb(status); });
+  });
+}
+
+Pebble.addEventListener('ready', function() {
+  syncPluginSubscriptions(loadSettings());
+});
+
 Pebble.addEventListener('showConfiguration', function() {
-  var html = configPage.build(loadSettings());
-  Pebble.openURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+  getPluginStatus(function(status) {
+    var html = configPage.build(loadSettings(), status);
+    Pebble.openURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+  });
 });
 
 Pebble.addEventListener('webviewclosed', function(e) {
@@ -60,6 +276,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
   Pebble.sendAppMessage(toWire(loadSettings()),
     function() { console.log('Config sent'); },
     function(err) { console.log('Config send failed: ' + JSON.stringify(err)); });
+  syncPluginSubscriptions(loadSettings());
 });
 
 // ---------------------------------------------------------------------------
