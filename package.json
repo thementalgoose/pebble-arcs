@@ -6,15 +6,16 @@
     "pebble-app"
   ],
   "private": true,
-  "dependencies": {
-  },
+  "dependencies": {},
   "pebble": {
     "displayName": "ARCs",
     "uuid": "0122e256-9254-4bbd-9079-f4afd0819b1a",
     "sdkVersion": "3",
+    "manifestVersion": 2,
     "enableMultiJS": true,
-    "capabilities": [ 
-      "health" 
+    "capabilities": [
+      "health",
+      "configurable"
     ],
     "targetPlatforms": [
       "aplite",
@@ -55,7 +56,8 @@
       "WeatherUseCelsius",
       "TemperatureLower",
       "TemperatureUpper",
-      "DistanceGoal"
+      "DistanceGoal",
+      "PhoneBattery"
     ],
     "resources": {
       "media": [
@@ -83,6 +85,28 @@
           ]
         }
       ]
-    }
+    },
+    "usesPermissions": [
+      {
+        "name": "Internet",
+        "parameters": {
+          "domains": [
+            "api.open-meteo.com"
+          ]
+        },
+        "reason": "To fetch the current weather",
+        "required": false
+      },
+      {
+        "name": "Location",
+        "reason": "To show the weather where you are",
+        "required": false
+      },
+      {
+        "name": "Health",
+        "reason": "To show steps, heart rate and calories",
+        "required": false
+      }
+    ]
   }
 }

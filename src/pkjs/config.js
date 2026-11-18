@@ -1,4 +1,4 @@
-let options = [
+let indicatorOptions = [
   { label: "Week of year",   value: 0 },
   { label: "Weekday",        value: 1 },
   { label: "Month",          value: 2 },
@@ -11,6 +11,12 @@ let options = [
   { label: "Temperature",    value: 9 },
   { label: "Weather",        value: 10 },
 ];
+
+// Options backed by Pebble plugin sources (shown under "Plugin Data")
+let pluginOptions = [
+  { label: "Phone Battery", value: 11 },
+];
+let options = indicatorOptions.concat(pluginOptions);
 
 let DEFAULT_DARK_THEME = true;
 let DEFAULT_STANDALONE_BATTERY_PERCENTAGE = false;
@@ -75,6 +81,8 @@ let abbreviations = [
 
 module.exports = {
   options: options,
+  indicatorOptions: indicatorOptions,
+  pluginOptions: pluginOptions,
   colorLayout: COLOR_LAYOUT,
   abbreviations: abbreviations,
   isColorWatch: isColorWatch,

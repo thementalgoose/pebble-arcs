@@ -44,6 +44,62 @@ function toWire(s) {
   return m;
 }
 
+// ---------------------------------------------------------------------------
+// Plugin data sources (Pebble Plugins preview, mobile app 2.0.0+)
+// ---------------------------------------------------------------------------
+
+var QUADRANT_KEYS = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'];
+var OPTION_PHONE_BATTERY = 11;
+var phoneBatterySub = null;
+
+function sendPhoneBattery(value) {
+  Pebble.sendAppMessage({ PhoneBattery: value },
+    function() { console.log('Phone battery sent: ' + value); },
+    function(e) { console.log('Phone battery send failed: ' + JSON.stringify(e)); });
+}
+
+function syncPluginSubscriptions(settings) {
+  var wanted = QUADRANT_KEYS.some(function(q) {
+    return parseInt(settings[q + '_Option'], 10) === OPTION_PHONE_BATTERY;
+  });
+
+  if (wanted && !phoneBatterySub) {
+    if (typeof Pebble.subscribeToSource !== 'function') {
+      console.log('Plugins not supported by this Pebble app');
+      sendPhoneBattery(-1);
+      return;
+    }
+    phoneBatterySub = Pebble.subscribeToSource({
+      category: 'phone',
+      item: 'phone_state',
+      properties: ['battery_level'],
+      onData: function(update) {
+        var inst = update && update.instances && update.instances[0];
+        var prop = inst && inst.properties && inst.properties.battery_level;
+        var level = -1;
+        if (prop && prop.numericValue && typeof prop.numericValue.value === 'number') {
+          level = Math.round(prop.numericValue.value);
+        } else if (prop && prop.shortText && prop.shortText.text) {
+          level = parseInt(prop.shortText.text, 10);
+          if (isNaN(level)) level = -1;
+        }
+        sendPhoneBattery(level);
+      },
+      onError: function(err) {
+        console.log('Phone battery error: ' + (err && err.code) + ' ' + (err && err.message));
+        sendPhoneBattery(-1);
+      }
+    });
+  } else if (!wanted && phoneBatterySub) {
+    phoneBatterySub.unsubscribe();
+    phoneBatterySub = null;
+  }
+}
+
+Pebble.addEventListener('ready', function() {
+  syncPluginSubscriptions(loadSettings());
+});
+
 Pebble.addEventListener('showConfiguration', function() {
   var html = configPage.build(loadSettings());
   Pebble.openURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
@@ -60,6 +116,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
   Pebble.sendAppMessage(toWire(loadSettings()),
     function() { console.log('Config sent'); },
     function(err) { console.log('Config send failed: ' + JSON.stringify(err)); });
+  syncPluginSubscriptions(loadSettings());
 });
 
 // ---------------------------------------------------------------------------

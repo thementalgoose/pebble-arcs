@@ -267,6 +267,10 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_WeatherTemperature);
   if (t) weather_set_temperature(tuple_signed_int(t));
 
+  // Phone battery from the plugin source (negative = unavailable)
+  t = dict_find(iter, MESSAGE_KEY_PhoneBattery);
+  if (t) metrics_set_phone_battery(tuple_signed_int(t));
+
   t = dict_find(iter, MESSAGE_KEY_WeatherCondition);
   if (t) weather_set_condition((int)t->value->int32);
 

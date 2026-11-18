@@ -14,6 +14,7 @@ typedef enum {
   METRIC_CALORIES    = 8,
   METRIC_TEMPERATURE        = 9,
   METRIC_WEATHER_CONDITION  = 10,
+  METRIC_PHONE_BATTERY      = 11,  // plugin: phone/phone_state battery_level
 } MetricOption;
 
 typedef struct {
@@ -29,6 +30,9 @@ void metrics_set_temperature_bounds(int lower, int upper);
 
 // Update the distance goal used for the arc percentage.
 void metrics_set_distance_goal(int goal);
+
+// Update the phone battery level (0-100, or negative when unavailable).
+void metrics_set_phone_battery(int percent);
 
 // Restore any cached values loaded from persistent storage.
 void metrics_restore_cached_values(void);

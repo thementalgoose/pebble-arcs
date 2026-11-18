@@ -13,7 +13,17 @@ static int s_temp_lower    = 5;
 static int s_temp_upper    = 35;
 static int s_distance_goal = 5000;
 
+static const uint32_t PERSIST_KEY_CACHED_PHONE_BATTERY = 0xFEF1;
 static int s_cached_heart_rate = -1;
+static int s_phone_battery = -1;
+
+void metrics_set_phone_battery(int percent) {
+  if (percent > 100) percent = 100;
+  if (percent < 0) percent = -1;
+  if (percent == s_phone_battery) return;
+  s_phone_battery = percent;
+  persist_write_int(PERSIST_KEY_CACHED_PHONE_BATTERY, percent);
+}
 
 void metrics_set_distance_goal(int goal) {
   s_distance_goal = goal;
@@ -26,6 +36,9 @@ static void metrics_cache_heart_rate(int bpm) {
 }
 
 void metrics_restore_cached_values(void) {
+  if (persist_exists(PERSIST_KEY_CACHED_PHONE_BATTERY)) {
+    s_phone_battery = persist_read_int(PERSIST_KEY_CACHED_PHONE_BATTERY);
+  }
   if (persist_exists(PERSIST_KEY_CACHED_HEART_RATE)) {
     int stored = persist_read_int(PERSIST_KEY_CACHED_HEART_RATE);
     s_cached_heart_rate = stored;
@@ -107,6 +120,13 @@ MetricResult metrics_fetch(MetricOption option) {
       BatteryChargeState state = battery_state_service_peek();
       snprintf(r.label, sizeof(r.label), "%d%%", state.charge_percent);
       r.percent = state.charge_percent;
+      break;
+    }
+    case METRIC_PHONE_BATTERY: {
+      if (s_phone_battery >= 0) {
+        snprintf(r.label, sizeof(r.label), "%d%%", s_phone_battery);
+        r.percent = s_phone_battery;
+      }
       break;
     }
     case METRIC_HEART_RATE: {
