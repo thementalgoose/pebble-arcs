@@ -28,6 +28,8 @@
     "wind_direction": { "min": 0,  "max": 360,  "editable": false },
     "precipitation":  { "min": 0,  "max": 100,  "editable": false },
     "uv_index":       { "min": 0,  "max": 11,   "editable": true  },
+    "condition":      { "min": 0,  "max": 100,  "editable": false },
+    "condition_code": { "min": 0,  "max": 100,  "editable": false },
     "battery_level":  { "min": 0,  "max": 100,  "editable": false },
     "battery":        { "min": 0,  "max": 100,  "editable": false },
     "heart_rate":     { "min": 40, "max": 100,  "editable": true  },

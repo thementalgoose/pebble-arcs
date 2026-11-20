@@ -80,7 +80,15 @@ let abbreviations = [
   "DRZZ: Drizzle",
   "RAIN: Rain", 
   "SNOW: Snow", 
-  "STRM: Storm"
+  "STRM: Storm",
+  "SUN: Sun (plugin)",
+  "PCLD: Partly Cloudy (plugin)",
+  "LRN: Light Rain (plugin)",
+  "HRN: Heavy Rain (plugin)",
+  "LSNW: Light Snow (plugin)",
+  "HSNW: Heavy Snow (plugin)",
+  "RSNW: Rain & Snow (plugin)",
+  "--: Unknown (plugin)"
 ]
 
 
