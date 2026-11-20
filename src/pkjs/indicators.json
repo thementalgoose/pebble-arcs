@@ -1,0 +1,38 @@
+{
+  "indicators": {
+    "0":  { "name": "Week of year",        "min": 0,  "max": 52,   "editable": false },
+    "1":  { "name": "Weekday",             "min": 0,  "max": 7,    "editable": false },
+    "2":  { "name": "Month",               "min": 0,  "max": 12,   "editable": false },
+    "3":  { "name": "Day of month",        "min": 0,  "max": 31,   "editable": false },
+    "4":  { "name": "Battery",             "min": 0,  "max": 100,  "editable": false },
+    "5":  { "name": "Heart Rate",          "min": 40, "max": 100,  "editable": true  },
+    "6":  { "name": "Steps",               "min": 0,  "max": 5000, "editable": true  },
+    "7":  { "name": "Distance",            "min": 0,  "max": 5000, "editable": true  },
+    "8":  { "name": "Calories",            "min": 0,  "max": 2000, "editable": true  },
+    "9":  { "name": "Temperature",         "min": 5,  "max": 35,   "editable": true  },
+    "10": { "name": "Weather",             "min": 0,  "max": 7,    "editable": false },
+    "11": { "name": "Phone Battery",       "min": 0,  "max": 100,  "editable": false },
+    "12": { "name": "Complication Slot 1", "min": 0,  "max": 100,  "editable": false },
+    "13": { "name": "Complication Slot 2", "min": 0,  "max": 100,  "editable": false },
+    "14": { "name": "Complication Slot 3", "min": 0,  "max": 100,  "editable": false },
+    "15": { "name": "Complication Slot 4", "min": 0,  "max": 100,  "editable": false },
+    "16": { "name": "Complication Slot 5", "min": 0,  "max": 100,  "editable": false }
+  },
+  "complications": {
+    "temperature":    { "min": 5,  "max": 35,   "editable": true  },
+    "feels_like":     { "min": 5,  "max": 35,   "editable": true  },
+    "high":           { "min": 5,  "max": 35,   "editable": true  },
+    "low":            { "min": 5,  "max": 35,   "editable": true  },
+    "humidity":       { "min": 0,  "max": 100,  "editable": false },
+    "wind_speed":     { "min": 0,  "max": 50,   "editable": true  },
+    "wind_direction": { "min": 0,  "max": 360,  "editable": false },
+    "precipitation":  { "min": 0,  "max": 100,  "editable": false },
+    "uv_index":       { "min": 0,  "max": 11,   "editable": true  },
+    "battery_level":  { "min": 0,  "max": 100,  "editable": false },
+    "battery":        { "min": 0,  "max": 100,  "editable": false },
+    "heart_rate":     { "min": 40, "max": 100,  "editable": true  },
+    "steps":          { "min": 0,  "max": 5000, "editable": true  },
+    "distance":       { "min": 0,  "max": 5000, "editable": true  },
+    "calories":       { "min": 0,  "max": 2000, "editable": true  }
+  }
+}

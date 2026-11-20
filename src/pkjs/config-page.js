@@ -16,6 +16,7 @@ var CSS = [
   '.row label{flex:1}',
   'input[type=number]{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;',
   'padding:8px 10px;font-size:16px;max-width:55%;width:120px;text-align:right}',
+  'input[type=number]:disabled{opacity:.45;cursor:not-allowed}',
   'input[type=range]{flex:1;accent-color:var(--accent)}',
   '.val{min-width:28px;text-align:right;color:var(--muted)}',
   '.sw{position:relative;width:48px;height:28px;flex:none}',
@@ -24,10 +25,24 @@ var CSS = [
   '.sw i:after{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}',
   '.sw input:checked+i{background:var(--accent)}',
   '.sw input:checked+i:after{transform:translateX(20px)}',
-  '.quad{border-top:1px solid var(--line);padding:12px 0 4px}',
-  '.quad:first-of-type{border-top:0}',
-  '.quad .t{font-weight:600;margin-bottom:8px}',
+  '.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}',
+  '.qcard{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:92px;padding:12px;',
+  'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;text-align:left;font:inherit;cursor:pointer}',
+  '.qcard:active{opacity:.75}',
+  '.qcard.tl{border-top-left-radius:20px;align-items:flex-start}',
+  '.qcard.tr{border-top-right-radius:20px;align-items:flex-end;text-align:right}',
+  '.qcard.bl{border-bottom-left-radius:20px;flex-direction:column-reverse;align-items:flex-start}',
+  '.qcard.br{border-bottom-right-radius:20px;flex-direction:column-reverse;align-items:flex-end;text-align:right}',
+  '.qcard .arc{width:32px;height:32px;flex:none}',
+  '.qcard.tr .arc{transform:rotate(90deg)}',
+  '.qcard.br .arc{transform:rotate(180deg)}',
+  '.qcard.bl .arc{transform:rotate(270deg)}',
+  '.qcard .qi{display:flex;flex-direction:column;gap:2px;max-width:100%}',
+  '.qcard .qn{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}',
+  '.qcard .ql{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
   '.grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}',
+  '.sheet .grid{padding:6px 12px 8px;margin-top:0}',
+  '.sheet .row{padding:10px 12px;border-top:0}',
   '.c{width:30px;height:30px;border-radius:8px;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(128,128,128,.4)}',
   '.c.on{border-color:var(--text);transform:scale(1.12)}',
   '.pick{display:flex;align-items:center;gap:6px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:16px;max-width:60%}',
@@ -62,34 +77,70 @@ var SCRIPT = [
   'var D=window.__DATA__,S=D.settings,$=function(i){return document.getElementById(i)};',
   'function apply(){document.body.className=S.DarkTheme?"":"light"}',
   'function toggle(k){var e=$(k);e.checked=!!S[k];e.onchange=function(){S[k]=e.checked;apply()}}',
-  'function num(k){var e=$(k);e.value=S[k];e.oninput=function(){S[k]=e.value}}',
-  'D.toggles.forEach(toggle);D.nums.forEach(num);',
+  'D.toggles.forEach(toggle);',
   'function label(secs,v){var l="";secs.forEach(function(s){s.options.forEach(function(o){if(o.value===v)l=o.label})});return l||String(v)}',
   'var ov=$("ov"),sb=$("sheetBody");',
   'function closeSheet(){ov.className="ov";document.body.classList.remove("lock")}',
-  'function openSheet(title,key,pickId,secs,useStatus){$("sheetTitle").textContent=title;sb.innerHTML="";',
-  ' secs.forEach(function(s){if(s.title){var h=document.createElement("div");h.className="sec";h.textContent=s.title;sb.appendChild(h)}',
+  'function renderSections(secs,key,useStatus,onPick){',
+  ' var rows=[];secs.forEach(function(s){if(s.title){var h=document.createElement("div");h.className="sec";h.textContent=s.title;sb.appendChild(h)}',
   '  s.options.forEach(function(o){var st=(useStatus&&D.status[o.value])||{},off=st.enabled===false;',
   '   var r=document.createElement("div");r.className="opt"+(S[key]===o.value?" on":"")+(off?" off":"");',
   '   var t=document.createElement("div");t.className="ot";var l=document.createElement("span");l.textContent=o.label;t.appendChild(l);',
   '   if(st.detail){var d=document.createElement("small");d.textContent=st.detail;t.appendChild(d)}',
   '   if(off&&st.reason){var w=document.createElement("small");w.className="why";w.textContent=st.reason;t.appendChild(w)}',
   '   r.appendChild(t);if(off)r.setAttribute("aria-disabled","true");',
-  '   r.onclick=function(){if(off)return;S[key]=o.value;$(pickId).textContent=o.label;closeSheet()};sb.appendChild(r)})});',
-  ' sb.scrollTop=0;document.body.classList.add("lock");ov.className="ov open"}',
+  '   r.onclick=function(){if(off)return;var prev=S[key];S[key]=o.value;',
+  '    rows.forEach(function(it){it.el.className="opt"+(S[key]===it.val?" on":"")+(it.off?" off":"")});',
+  '    onPick(o,prev)};',
+  '   rows.push({el:r,val:o.value,off:off});sb.appendChild(r)})})}',
+  'function showSheet(title){$("sheetTitle").textContent=title;sb.scrollTop=0;document.body.classList.add("lock");ov.className="ov open"}',
+  'function openSheet(title,key,pickId,secs,useStatus){sb.innerHTML="";',
+  ' renderSections(secs,key,useStatus,function(o){$(pickId).textContent=o.label;closeSheet()});showSheet(title)}',
+  'function norm(s){return String(s||"").toLowerCase().replace(/[_\\-]+/g," ").trim()}',
+  'function matchComplication(desc){var cb=D.complicationBounds||{};var nd=norm(desc);if(!nd)return null;',
+  ' var best=null,bestLen=0;var keys=Object.keys(cb);',
+  ' for(var i=0;i<keys.length;i++){var k=keys[i],nk=norm(k);if(!nk)continue;',
+  '  if(nd===nk)return cb[k];',
+  '  if(nd.indexOf(nk)!==-1&&nk.length>bestLen){best=cb[k];bestLen=nk.length}}',
+  ' if(best)return best;',
+  ' var words=nd.split(/[^a-z0-9]+/);',
+  ' for(var i=0;i<keys.length;i++){var k=keys[i],nk=norm(k);',
+  '  for(var j=0;j<words.length;j++){if(words[j]&&nk.indexOf(words[j])!==-1&&words[j].length>bestLen){best=cb[k];bestLen=words[j].length}}}',
+  ' return best}',
+  'function boundCfg(opt){var n=Number(opt);',
+  ' if(n>=12&&n<=16){var st=D.status[n]||{};return matchComplication(st.detail)||{min:0,max:100,editable:false}}',
+  ' return D.bounds[String(opt)]||{min:0,max:100,editable:false}}',
+  'function makeBoundRow(labelText,onChange){var row=document.createElement("div");row.className="row";',
+  ' var lb=document.createElement("label");lb.textContent=labelText;',
+  ' var inp=document.createElement("input");inp.type="number";inp.inputMode="numeric";',
+  ' inp.oninput=function(){var v=parseInt(inp.value,10);if(!isNaN(v))onChange(v)};',
+  ' row.appendChild(lb);row.appendChild(inp);sb.appendChild(row);return inp}',
+  'function openQuadSheet(q,title){sb.innerHTML="";var ch=document.createElement("div");ch.className="sec";ch.textContent="Colour";sb.appendChild(ch);',
+  ' var g=document.createElement("div");g.className="grid";var ckey=q+"_Colour",okey=q+"_Option",minKey=q+"_Min",maxKey=q+"_Max";',
+  ' function syncGrid(){var cur=String(S[ckey]).toLowerCase();Array.prototype.forEach.call(g.children,function(b){b.className="c"+(b.dataset.c.toLowerCase()===cur?" on":"")})}',
+  ' D.palette.forEach(function(c){var b=document.createElement("div");b.className="c";b.style.background="#"+c;b.dataset.c=c;',
+  '  b.onclick=function(){S[ckey]=c;syncGrid();paint()};g.appendChild(b)});',
+  ' syncGrid();sb.appendChild(g);',
+  ' var bh=document.createElement("div");bh.className="sec";bh.textContent="Bounds";sb.appendChild(bh);',
+  ' var minInp=makeBoundRow("Minimum",function(v){S[minKey]=v});',
+  ' var maxInp=makeBoundRow("Maximum",function(v){S[maxKey]=v});',
+  ' function syncBounds(){var b=boundCfg(S[okey]);',
+  '  if(S[minKey]===undefined||!b.editable)S[minKey]=b.min;',
+  '  if(S[maxKey]===undefined||!b.editable)S[maxKey]=b.max;',
+  '  minInp.value=S[minKey];maxInp.value=S[maxKey];',
+  '  minInp.disabled=!b.editable;maxInp.disabled=!b.editable}',
+  ' syncBounds();',
+  ' renderSections(D.sections,okey,true,function(o,prev){if(o.value!==prev){var b=boundCfg(o.value);S[minKey]=b.min;S[maxKey]=b.max}syncBounds();paint()});showSheet(title)}',
   '$("sheetClose").onclick=closeSheet;',
   'ov.onclick=function(e){if(e.target===ov)closeSheet()};',
   'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeSheet()});',
-  'D.quads.forEach(function(q,i){var key=q+"_Option",pid=q+"_pick";S[key]=parseInt(S[key],10);$(pid).textContent=label(D.sections,S[key]);$(pid).onclick=function(){openSheet(D.quadNames[i],key,pid,D.sections,true)}});',
+  'D.quads.forEach(function(q,i){var key=q+"_Option";S[key]=parseInt(S[key],10);$(q+"_card").onclick=function(){openQuadSheet(q,D.quadNames[i])}});',
   'S.WeatherUpdateInterval=parseInt(S.WeatherUpdateInterval,10);$("WeatherUpdateInterval_pick").textContent=label(D.intervalSections,S.WeatherUpdateInterval);$("WeatherUpdateInterval_pick").onclick=function(){openSheet("Update interval","WeatherUpdateInterval","WeatherUpdateInterval_pick",D.intervalSections,false)};',
   'var w=$("IndicatorWidth"),wv=$("IndicatorWidthVal");w.value=S.IndicatorWidth;wv.textContent=w.value;',
-  'w.oninput=function(){S.IndicatorWidth=parseInt(w.value,10);wv.textContent=w.value};',
-  'D.quads.forEach(function(q){var g=$(q+"_grid"),key=q+"_Colour";',
-  ' D.palette.forEach(function(c){var b=document.createElement("div");b.className="c";',
-  '  b.style.background="#"+c;b.onclick=function(){S[key]=c;paint()};b.dataset.c=c;g.appendChild(b)});});',
-  'function paint(){D.quads.forEach(function(q){var cur=String(S[q+"_Colour"]).toLowerCase();',
-  ' Array.prototype.forEach.call($(q+"_grid").children,function(b){',
-  '  b.className="c"+(b.dataset.c.toLowerCase()===cur?" on":"")})})}',
+  'w.oninput=function(){S.IndicatorWidth=parseInt(w.value,10);wv.textContent=w.value;paint()};',
+  'function paint(){var sw=String(Math.max(2,Math.min(8,Math.round((parseInt(S.IndicatorWidth,10)||5)*0.6))));',
+  ' D.quads.forEach(function(q){$(q+"_val").textContent=label(D.sections,S[q+"_Option"]);',
+  '  var arc=$(q+"_arc");arc.setAttribute("stroke","#"+S[q+"_Colour"]);arc.setAttribute("stroke-width",sw)})}',
   'paint();apply();',
   '$("save").onclick=function(){document.location="pebblejs://close#"+encodeURIComponent(JSON.stringify(S))};'
 ].join('\n');
@@ -108,19 +159,9 @@ var TOGGLES = [
   ['WeatherUseCelsius', 'Use Celsius']
 ];
 var QUADS = [
-  ['TopLeft', 'Top Left'], ['TopRight', 'Top Right'],
-  ['BottomLeft', 'Bottom Left'], ['BottomRight', 'Bottom Right']
+  ['TopLeft', 'Top Left', 'tl'], ['TopRight', 'Top Right', 'tr'],
+  ['BottomLeft', 'Bottom Left', 'bl'], ['BottomRight', 'Bottom Right', 'br']
 ];
-var NUMS = [
-  ['StepGoal', 'Steps Goal'],
-  ['HeartRateLower', 'Heart Rate lower bound'],
-  ['HeartRateUpper', 'Heart Rate upper bound'],
-  ['CalorieGoal', 'Calorie Goal'],
-  ['DistanceGoal', 'Distance Goal (metres)'],
-  ['TemperatureLower', 'Temperature lower bound'],
-  ['TemperatureUpper', 'Temperature upper bound']
-];
-
 function toggleRow(id) {
   var label = TOGGLES.filter(function(t) { return t[0] === id; })[0][1];
   return '<div class="row"><label for="' + id + '">' + label + '</label>' +
@@ -135,25 +176,22 @@ function build(settings, pluginStatus) {
     palette = ['000000', 'FFFFFF'];
   }
 
-  var quadHtml = QUADS.map(function(q) {
-    return '<div class="quad"><div class="t">' + q[1] + '</div>' +
-      '<div class="row"><label>Data</label>' +
-      '<button type="button" class="pick" id="' + q[0] + '_pick"></button></div>' +
-      '<div class="grid" id="' + q[0] + '_grid"></div></div>';
-  }).join('');
-
-  var numHtml = NUMS.map(function(n) {
-    return '<div class="row"><label for="' + n[0] + '">' + n[1] + '</label>' +
-      '<input type="number" inputmode="numeric" id="' + n[0] + '"></div>';
-  }).join('');
+  var quadHtml = '<div class="qgrid">' + QUADS.map(function(q) {
+    return '<button type="button" class="qcard ' + q[2] + '" id="' + q[0] + '_card">' +
+      '<svg class="arc" viewBox="0 0 36 36" aria-hidden="true">' +
+      '<path d="M6 30A24 24 0 0 1 30 6" fill="none" stroke="var(--line)" stroke-width="5" stroke-linecap="round"/>' +
+      '<path id="' + q[0] + '_arc" d="M6 30A24 24 0 0 1 30 6" fill="none" stroke-width="5" stroke-linecap="round"/></svg>' +
+      '<div class="qi"><span class="qn">' + q[1] + '</span><span class="ql" id="' + q[0] + '_val"></span></div></button>';
+  }).join('') + '</div>';
 
   var data = {
     settings: settings,
     toggles: TOGGLES.map(function(t) { return t[0]; }),
-    nums: NUMS.map(function(n) { return n[0]; }),
     quads: QUADS.map(function(q) { return q[0]; }),
     palette: palette,
     status: pluginStatus || {},
+    bounds: cfg.indicatorBounds,
+    complicationBounds: cfg.complicationBounds,
     quadNames: QUADS.map(function(q) { return q[1]; }),
     sections: [
       { title: 'Indicators', options: cfg.indicatorOptions },
@@ -168,16 +206,14 @@ function build(settings, pluginStatus) {
   var body =
     '<h1>ARCs</h1>' +
     '<div class="card"><h2>Theme</h2>' + toggleRow('DarkTheme') + '</div>' +
-    '<div class="card"><h2>Statuses</h2>' +
-      '<div class="hint">Show status indicators on the watchface edges</div>' +
-      toggleRow('QuietTimeIndicator') + toggleRow('DisconnectIndicator') + '</div>' +
-    '<div class="card"><h2>Style</h2>' + toggleRow('OutlinedArcs') + toggleRow('AnimateIndicators') + '</div>' +
-    '<div class="card"><h2>Indicators</h2>' + toggleRow('ShowIndicatorText') +
+    '<div class="card"><h2>Indicators</h2>' +
+      toggleRow('OutlinedArcs') + toggleRow('AnimateIndicators') + toggleRow('ShowIndicatorText') +
       '<div class="row"><label for="IndicatorWidth">Indicator Width</label>' +
       '<input type="range" id="IndicatorWidth" min="1" max="20" step="1">' +
       '<span class="val" id="IndicatorWidthVal"></span></div>' + quadHtml + '</div>' +
-    '<div class="card"><h2>Configuration</h2>' +
-      '<div class="hint">For the relevant indicators above, set goals and bounds here</div>' + numHtml + '</div>' +
+    '<div class="card"><h2>Statuses</h2>' +
+      '<div class="hint">Show status indicators on the watchface edges</div>' +
+      toggleRow('QuietTimeIndicator') + toggleRow('DisconnectIndicator') + '</div>' +
     '<div class="card"><h2>Weather</h2>' +
       '<div class="hint">Uses GPS to fetch current weather from Open-Meteo. Select "Temperature" or "Weather" in the Indicators section to display weather data.</div>' +
       '<div class="row"><label>Update interval</label>' +

@@ -50,16 +50,17 @@ let DEFAULT_BOTTOM_RIGHT_OPTION = 0;
 let DEFAULT_THIN_ARCS = true;
 let DEFAULT_OUTLINED_ARCS = isColorWatch ? false : true;
 
+let boundsData = require('./indicators.json');
+let indicatorBounds = boundsData.indicators || {};
+let complicationBounds = boundsData.complications || {};
+
 let DEFAULT_WEATHER_UPDATE_INTERVAL = 60;
 let DEFAULT_WEATHER_USE_CELSIUS = true;
-let DEFAULT_TEMPERATURE_LOWER = "5";
-let DEFAULT_TEMPERATURE_UPPER = "35";
 
-let DEFAULT_STEP_GOAL = "5000";
-let DEFAULT_DISTANCE_GOAL = "5000";
-let DEFAULT_HEART_RATE_LOWERBOUND = "40";
-let DEFAULT_HEART_RATE_UPPERBOUND = "100";
-let DEFAULT_CALORIE_GOAL = "2000";
+function defaultBound(opt, key) {
+  var b = indicatorBounds[String(opt)];
+  return b ? b[key] : (key === 'min' ? 0 : 100);
+}
 
 let COLOR_LAYOUT = [
   [false,    "000000", false,    "FFFFFF", false   ],
@@ -87,6 +88,8 @@ module.exports = {
   options: options,
   indicatorOptions: indicatorOptions,
   pluginOptions: pluginOptions,
+  indicatorBounds: indicatorBounds,
+  complicationBounds: complicationBounds,
   colorLayout: COLOR_LAYOUT,
   abbreviations: abbreviations,
   isColorWatch: isColorWatch,
@@ -100,19 +103,20 @@ module.exports = {
     IndicatorWidth: DEFAULT_INDICATOR_WIDTH,
     TopLeft_Colour: DEFAULT_TOP_LEFT_COLOUR,
     TopLeft_Option: DEFAULT_TOP_LEFT_OPTION,
+    TopLeft_Min: defaultBound(DEFAULT_TOP_LEFT_OPTION, 'min'),
+    TopLeft_Max: defaultBound(DEFAULT_TOP_LEFT_OPTION, 'max'),
     TopRight_Colour: DEFAULT_TOP_RIGHT_COLOUR,
     TopRight_Option: DEFAULT_TOP_RIGHT_OPTION,
+    TopRight_Min: defaultBound(DEFAULT_TOP_RIGHT_OPTION, 'min'),
+    TopRight_Max: defaultBound(DEFAULT_TOP_RIGHT_OPTION, 'max'),
     BottomLeft_Colour: DEFAULT_BOTTOM_LEFT_COLOUR,
     BottomLeft_Option: DEFAULT_BOTTOM_LEFT_OPTION,
+    BottomLeft_Min: defaultBound(DEFAULT_BOTTOM_LEFT_OPTION, 'min'),
+    BottomLeft_Max: defaultBound(DEFAULT_BOTTOM_LEFT_OPTION, 'max'),
     BottomRight_Colour: DEFAULT_BOTTOM_RIGHT_COLOUR,
     BottomRight_Option: DEFAULT_BOTTOM_RIGHT_OPTION,
-    StepGoal: DEFAULT_STEP_GOAL,
-    HeartRateLower: DEFAULT_HEART_RATE_LOWERBOUND,
-    HeartRateUpper: DEFAULT_HEART_RATE_UPPERBOUND,
-    CalorieGoal: DEFAULT_CALORIE_GOAL,
-    DistanceGoal: DEFAULT_DISTANCE_GOAL,
-    TemperatureLower: DEFAULT_TEMPERATURE_LOWER,
-    TemperatureUpper: DEFAULT_TEMPERATURE_UPPER,
+    BottomRight_Min: defaultBound(DEFAULT_BOTTOM_RIGHT_OPTION, 'min'),
+    BottomRight_Max: defaultBound(DEFAULT_BOTTOM_RIGHT_OPTION, 'max'),
     WeatherUpdateInterval: DEFAULT_WEATHER_UPDATE_INTERVAL,
     WeatherUseCelsius: DEFAULT_WEATHER_USE_CELSIUS,
   },

@@ -18,6 +18,10 @@ function loadSettings() {
     var c = s[q + '_Colour'];
     if (typeof c === 'number') c = ('000000' + c.toString(16)).slice(-6);
     s[q + '_Colour'] = String(c).replace('#', '');
+    var opt = parseInt(s[q + '_Option'], 10);
+    var b = cfg.indicatorBounds[String(opt)] || { min: 0, max: 100 };
+    if (saved[q + '_Min'] === undefined || saved[q + '_Min'] === null) s[q + '_Min'] = b.min;
+    if (saved[q + '_Max'] === undefined || saved[q + '_Max'] === null) s[q + '_Max'] = b.max;
   });
   return s;
 }
@@ -29,17 +33,13 @@ function toWire(s) {
     m[k] = s[k] ? 1 : 0;
   });
   ['IndicatorWidth', 'WeatherUpdateInterval', 'TopLeft_Option', 'TopRight_Option',
-   'BottomLeft_Option', 'BottomRight_Option'].forEach(function(k) {
+   'BottomLeft_Option', 'BottomRight_Option',
+   'TopLeft_Min', 'TopLeft_Max', 'TopRight_Min', 'TopRight_Max',
+   'BottomLeft_Min', 'BottomLeft_Max', 'BottomRight_Min', 'BottomRight_Max'].forEach(function(k) {
     m[k] = parseInt(s[k], 10);
   });
   ['TopLeft_Colour', 'TopRight_Colour', 'BottomLeft_Colour', 'BottomRight_Colour'].forEach(function(k) {
     m[k] = parseInt(s[k], 16);
-  });
-  // The watch parses these with atoi(cstring), so send them as strings
-  ['StepGoal', 'HeartRateLower', 'HeartRateUpper', 'CalorieGoal', 'DistanceGoal',
-   'TemperatureLower', 'TemperatureUpper'].forEach(function(k) {
-    var n = parseInt(s[k], 10);
-    m[k] = String(isNaN(n) ? cfg.defaults[k] : n);
   });
   return m;
 }
