@@ -27,15 +27,6 @@ typedef struct {
   int    percent;
 } MetricResult;
 
-// Update the goals used for percentage calculations.
-void metrics_set_goals(int step_goal, int calorie_goal, int hr_lower, int hr_upper);
-
-// Update the temperature range used for the arc percentage.
-void metrics_set_temperature_bounds(int lower, int upper);
-
-// Update the distance goal used for the arc percentage.
-void metrics_set_distance_goal(int goal);
-
 // Update the phone battery level (0-100, or negative when unavailable).
 void metrics_set_phone_battery(int percent);
 
@@ -50,5 +41,5 @@ void metrics_set_complication(int slot, int percent, const char *label);
 // Restore any cached values loaded from persistent storage.
 void metrics_restore_cached_values(void);
 
-// Fetch a fresh MetricResult for the given option.
-MetricResult metrics_fetch(MetricOption option);
+// Fetch a fresh MetricResult for the given option using the configured [min_val, max_val] range.
+MetricResult metrics_fetch(MetricOption option, int min_val, int max_val);

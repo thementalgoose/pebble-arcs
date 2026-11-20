@@ -5,6 +5,18 @@ var UNSUPPORTED = { percent: -1, label: '--' };
 var NO_PERMISSION = { percent: -2, label: '-' };
 var LABEL_MAX = 7;
 
+var CONDITION_CODES = {
+  sun:           { label: 'SUN',  percent: 100 },
+  partly_cloudy: { label: 'PCLD', percent: 88 },
+  cloudy:        { label: 'CLD',  percent: 75 },
+  light_rain:    { label: 'LRN',  percent: 63 },
+  heavy_rain:    { label: 'HRN',  percent: 50 },
+  light_snow:    { label: 'LSNW', percent: 38 },
+  heavy_snow:    { label: 'HSNW', percent: 25 },
+  rain_and_snow: { label: 'RSNW', percent: 13 },
+  unknown:       { label: '--',   percent: 0 }
+};
+
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
 function formatNumber(v, unit) {
@@ -41,6 +53,20 @@ function toDisplay(prop) {
     return {
       percent: b.value ? 100 : 0,
       label: trimLabel(shortText !== null ? shortText : (b.value ? 'On' : 'Off'))
+    };
+  }
+
+  if (shortText !== null) {
+    var key = shortText.toLowerCase().trim().replace(/[\s-]+/g, '_');
+    if (CONDITION_CODES[key]) {
+      return {
+        percent: CONDITION_CODES[key].percent,
+        label: CONDITION_CODES[key].label
+      };
+    }
+    return {
+      percent: 100,
+      label: trimLabel(shortText)
     };
   }
 

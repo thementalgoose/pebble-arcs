@@ -49,34 +49,6 @@ static void theme_apply(bool dark) {
 }
 
 // ---------------------------------------------------------------------------
-// Goals persistence helpers
-// ---------------------------------------------------------------------------
-
-static void goals_persist(int step_goal, int calorie_goal, int hr_lower, int hr_upper) {
-  persist_write_int(MESSAGE_KEY_StepGoal,      step_goal);
-  persist_write_int(MESSAGE_KEY_CalorieGoal,   calorie_goal);
-  persist_write_int(MESSAGE_KEY_HeartRateLower, hr_lower);
-  persist_write_int(MESSAGE_KEY_HeartRateUpper, hr_upper);
-  metrics_set_goals(step_goal, calorie_goal, hr_lower, hr_upper);
-}
-
-static void goals_load(void) {
-  metrics_set_goals(
-    persist_exists(MESSAGE_KEY_StepGoal)       ? persist_read_int(MESSAGE_KEY_StepGoal)       : 5000,
-    persist_exists(MESSAGE_KEY_CalorieGoal)    ? persist_read_int(MESSAGE_KEY_CalorieGoal)    : 2000,
-    persist_exists(MESSAGE_KEY_HeartRateLower) ? persist_read_int(MESSAGE_KEY_HeartRateLower) : 40,
-    persist_exists(MESSAGE_KEY_HeartRateUpper) ? persist_read_int(MESSAGE_KEY_HeartRateUpper) : 100
-  );
-  metrics_set_temperature_bounds(
-    persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
-    persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
-  );
-  metrics_set_distance_goal(
-    persist_exists(MESSAGE_KEY_DistanceGoal) ? persist_read_int(MESSAGE_KEY_DistanceGoal) : 5000
-  );
-}
-
-// ---------------------------------------------------------------------------
 // App message
 // ---------------------------------------------------------------------------
 
@@ -128,11 +100,6 @@ static void weather_request_update(void) {
 
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   Tuple *t;
-  bool goals_changed = false;
-  int step_goal    = persist_exists(MESSAGE_KEY_StepGoal)       ? persist_read_int(MESSAGE_KEY_StepGoal)       : 5000;
-  int calorie_goal = persist_exists(MESSAGE_KEY_CalorieGoal)    ? persist_read_int(MESSAGE_KEY_CalorieGoal)    : 2000;
-  int hr_lower     = persist_exists(MESSAGE_KEY_HeartRateLower) ? persist_read_int(MESSAGE_KEY_HeartRateLower) : 40;
-  int hr_upper     = persist_exists(MESSAGE_KEY_HeartRateUpper) ? persist_read_int(MESSAGE_KEY_HeartRateUpper) : 100;
 
   // Theme
   t = dict_find(iter, MESSAGE_KEY_DarkTheme);
@@ -200,47 +167,30 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   t = dict_find(iter, MESSAGE_KEY_BottomRight_Colour);
   if (t) quadrants_set_color(QUADRANT_SE, GColorFromHEX(t->value->int32));
 
-  // Goals (config inputs send strings)
-  t = dict_find(iter, MESSAGE_KEY_StepGoal);
-  if (t) { step_goal    = atoi(t->value->cstring); goals_changed = true; }
+  // Quadrant range bounds
+  t = dict_find(iter, MESSAGE_KEY_TopLeft_Min);
+  if (t) quadrants_set_min(QUADRANT_NW, tuple_int(t));
 
-  t = dict_find(iter, MESSAGE_KEY_CalorieGoal);
-  if (t) { calorie_goal = atoi(t->value->cstring); goals_changed = true; }
+  t = dict_find(iter, MESSAGE_KEY_TopLeft_Max);
+  if (t) quadrants_set_max(QUADRANT_NW, tuple_int(t));
 
-  t = dict_find(iter, MESSAGE_KEY_HeartRateLower);
-  if (t) { hr_lower     = atoi(t->value->cstring); goals_changed = true; }
+  t = dict_find(iter, MESSAGE_KEY_TopRight_Min);
+  if (t) quadrants_set_min(QUADRANT_NE, tuple_int(t));
 
-  t = dict_find(iter, MESSAGE_KEY_HeartRateUpper);
-  if (t) { hr_upper     = atoi(t->value->cstring); goals_changed = true; }
+  t = dict_find(iter, MESSAGE_KEY_TopRight_Max);
+  if (t) quadrants_set_max(QUADRANT_NE, tuple_int(t));
 
-  if (goals_changed) goals_persist(step_goal, calorie_goal, hr_lower, hr_upper);
+  t = dict_find(iter, MESSAGE_KEY_BottomLeft_Min);
+  if (t) quadrants_set_min(QUADRANT_SW, tuple_int(t));
 
-  t = dict_find(iter, MESSAGE_KEY_TemperatureLower);
-  if (t) {
-    int val = atoi(t->value->cstring);
-    persist_write_int(MESSAGE_KEY_TemperatureLower, val);
-    metrics_set_temperature_bounds(
-      val,
-      persist_exists(MESSAGE_KEY_TemperatureUpper) ? persist_read_int(MESSAGE_KEY_TemperatureUpper) : 35
-    );
-  }
+  t = dict_find(iter, MESSAGE_KEY_BottomLeft_Max);
+  if (t) quadrants_set_max(QUADRANT_SW, tuple_int(t));
 
-  t = dict_find(iter, MESSAGE_KEY_TemperatureUpper);
-  if (t) {
-    int val = atoi(t->value->cstring);
-    persist_write_int(MESSAGE_KEY_TemperatureUpper, val);
-    metrics_set_temperature_bounds(
-      persist_exists(MESSAGE_KEY_TemperatureLower) ? persist_read_int(MESSAGE_KEY_TemperatureLower) : 5,
-      val
-    );
-  }
+  t = dict_find(iter, MESSAGE_KEY_BottomRight_Min);
+  if (t) quadrants_set_min(QUADRANT_SE, tuple_int(t));
 
-  t = dict_find(iter, MESSAGE_KEY_DistanceGoal);
-  if (t) {
-    int val = atoi(t->value->cstring);
-    persist_write_int(MESSAGE_KEY_DistanceGoal, val);
-    metrics_set_distance_goal(val);
-  }
+  t = dict_find(iter, MESSAGE_KEY_BottomRight_Max);
+  if (t) quadrants_set_max(QUADRANT_SE, tuple_int(t));
 
   // Weather configuration from config page
   t = dict_find(iter, MESSAGE_KEY_WeatherUseCelsius);
@@ -358,7 +308,6 @@ static void window_unload(Window *window) {
 
 static void init(void) {
   quadrants_load();
-  goals_load();
 
   weather_restore_cached_data();
   metrics_restore_cached_values();
