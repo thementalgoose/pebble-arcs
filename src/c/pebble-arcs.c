@@ -277,6 +277,16 @@ static void health_handler(HealthEventType event, void *context) {
 // Window
 // ---------------------------------------------------------------------------
 
+#ifndef PBL_PLATFORM_APLITE
+static void unobstructed_change(AnimationProgress progress, void *context) {
+  GRect bounds = layer_get_unobstructed_bounds(window_get_root_layer(s_window));
+  design_layer_resize(bounds);
+  indicators_layer_resize(bounds);
+  date_layer_resize(bounds);
+  time_layer_resize(bounds);
+}
+#endif
+
 static void window_load(Window *window) {
   window_set_background_color(window, g_color_background);
 
@@ -285,6 +295,13 @@ static void window_load(Window *window) {
   indicators_layer_create(root);
   date_layer_create(root);
   time_layer_create(root);
+
+#ifndef PBL_PLATFORM_APLITE
+  UnobstructedAreaHandlers handlers = {
+    .change = unobstructed_change,
+  };
+  unobstructed_area_service_subscribe(handlers, NULL);
+#endif
 
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
@@ -296,6 +313,9 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
+#ifndef PBL_PLATFORM_APLITE
+  unobstructed_area_service_unsubscribe();
+#endif
   time_layer_destroy();
   date_layer_destroy();
   design_layer_destroy();

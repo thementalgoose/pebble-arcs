@@ -10,6 +10,7 @@ typedef enum {
 } Quadrant;
 
 void indicators_layer_create(Layer *root);
+void indicators_layer_resize(GRect bounds);
 void indicators_layer_destroy(void);
 void indicators_layer_apply_theme(void);
 

@@ -168,7 +168,7 @@ static GColor fade_color(GColor color) {
 
 #if PBL_ROUND
 // Returns a text rect positioned along the arc band for round displays.
-static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int hi_deg, Quadrant q) {
+static GRect text_rect_for_arc(GPoint center, int16_t rx, int16_t ry, int lo_deg, int hi_deg, Quadrant q) {
   int span = hi_deg - lo_deg;
   int mid_deg = (lo_deg + hi_deg) / 2;
   int shift = (span * 20) / 100;
@@ -182,12 +182,14 @@ static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int h
     default: break;
   }
 
-  int32_t angle       = DEG_TO_TRIGANGLE(target_deg);
-  int     arc_w       = indicators_get_width();
-  int     arc_b       = indicators_get_border();
-  uint16_t text_r     = radius - (arc_w / 2) - (arc_b / 2) - (TEXT_H / 2) - INDICATOR_TEXT_INSET;
-  int16_t x = center.x + (int16_t)(sin_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO);
-  int16_t y = center.y - (int16_t)(cos_lookup(angle) * (int32_t)text_r / TRIG_MAX_RATIO) - 3;
+  int32_t angle  = DEG_TO_TRIGANGLE(target_deg);
+  int     arc_w  = indicators_get_width();
+  int     arc_b  = indicators_get_border();
+  int     inset  = (arc_w / 2) + (arc_b / 2) + INDICATOR_TEXT_INSET;
+  int16_t text_rx = MAX(1, rx - inset - (TEXT_W / 2));
+  int16_t text_ry = MAX(1, ry - inset - (TEXT_H / 2));
+  int16_t x = center.x + (int16_t)(sin_lookup(angle) * (int32_t)text_rx / TRIG_MAX_RATIO);
+  int16_t y = center.y - (int16_t)(cos_lookup(angle) * (int32_t)text_ry / TRIG_MAX_RATIO) - 3;
   switch (q) {
     case QUADRANT_NW: x += INNER_TEXT_PADDING; y += INNER_TEXT_PADDING; break;
     case QUADRANT_NE: x -= INNER_TEXT_PADDING; y += INNER_TEXT_PADDING; break;
@@ -199,11 +201,35 @@ static GRect text_rect_for_arc(GPoint center, uint16_t radius, int lo_deg, int h
 }
 #endif
 
+static GPoint ellipse_point(GPoint center, int16_t rx, int16_t ry, int32_t angle) {
+  return GPoint(
+    center.x + (int16_t)(sin_lookup(angle) * (int32_t)rx / TRIG_MAX_RATIO),
+    center.y - (int16_t)(cos_lookup(angle) * (int32_t)ry / TRIG_MAX_RATIO)
+  );
+}
+
+static void draw_arc_band(GContext *ctx, GRect arc_rect, GPoint center,
+                          int16_t rx, int16_t ry, int32_t angle_lo, int32_t angle_hi) {
+  if (rx == ry) {
+    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+    return;
+  }
+  if (angle_hi <= angle_lo) return;
+  const int steps = 16;
+  GPoint prev = ellipse_point(center, rx, ry, angle_lo);
+  for (int i = 1; i <= steps; i++) {
+    int32_t a = angle_lo + (angle_hi - angle_lo) * i / steps;
+    GPoint cur = ellipse_point(center, rx, ry, a);
+    graphics_draw_line(ctx, prev, cur);
+    prev = cur;
+  }
+}
+
 // Draws a dim background arc for the full span, then a coloured fill arc up to
 // `percent`, plus a text label. `reversed` makes the fill grow from the high
 // end toward the low end (used for NE/SW so arcs originate from the vertical
 // centre-line on both sides).
-static void draw_arc(GContext *ctx, GRect arc_rect,
+static void draw_arc(GContext *ctx, GRect arc_rect, GPoint center, int16_t rx, int16_t ry,
                      int lo_deg, int hi_deg,
                      const char *text, int percent,
                      GColor color, bool reversed,
@@ -220,31 +246,31 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
   if (outlined_arcs_enabled()) {
     graphics_context_set_stroke_width(ctx, arc_w + arc_b);
     graphics_context_set_stroke_color(ctx, BAR_COLOR);
-    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+    draw_arc_band(ctx, arc_rect, center, rx, ry, angle_lo, angle_hi);
 
     graphics_context_set_stroke_width(ctx, arc_w);
     graphics_context_set_stroke_color(ctx, BACKGROUND_COLOR);
-    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+    draw_arc_band(ctx, arc_rect, center, rx, ry, angle_lo, angle_hi);
 
     if (percent > 0) {
       graphics_context_set_stroke_color(ctx, color);
       if (reversed) {
-        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+        draw_arc_band(ctx, arc_rect, center, rx, ry, angle_fill, angle_hi);
       } else {
-        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+        draw_arc_band(ctx, arc_rect, center, rx, ry, angle_lo, angle_fill);
       }
     }
   } else {
     graphics_context_set_stroke_width(ctx, arc_w);
     graphics_context_set_stroke_color(ctx, fade_color(color));
-    graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_hi);
+    draw_arc_band(ctx, arc_rect, center, rx, ry, angle_lo, angle_hi);
 
     if (percent > 0) {
       graphics_context_set_stroke_color(ctx, color);
       if (reversed) {
-        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_fill, angle_hi);
+        draw_arc_band(ctx, arc_rect, center, rx, ry, angle_fill, angle_hi);
       } else {
-        graphics_draw_arc(ctx, arc_rect, GOvalScaleModeFitCircle, angle_lo, angle_fill);
+        draw_arc_band(ctx, arc_rect, center, rx, ry, angle_lo, angle_fill);
       }
     }
   }
@@ -258,7 +284,7 @@ static void draw_arc(GContext *ctx, GRect arc_rect,
 }
 
 static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
-                          GPoint center, uint16_t radius, Quadrant q) {
+                          GPoint center, int16_t rx, int16_t ry, Quadrant q) {
   const char *text    = s_text[q];
   int         percent = s_pct[q];
   GColor      color   = s_color[q];
@@ -269,6 +295,9 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
       draw_arc(
         ctx, 
         arc_rect, 
+        center,
+        rx,
+        ry,
         lo,
         hi, 
         text, 
@@ -276,7 +305,7 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/false,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi, q),
+          text_rect_for_arc(center, rx, ry, lo, hi, q),
           GRect(EDGE_LEFT + INNER_TEXT_PADDING, EDGE_TOP + INDICATOR_Y_OFFSET + INNER_TEXT_PADDING, TEXT_W, TEXT_H)
         ),
         GTextAlignmentLeft
@@ -288,6 +317,9 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
       draw_arc(
         ctx, 
         arc_rect, 
+        center,
+        rx,
+        ry,
         lo,
         hi, 
         text, 
@@ -295,7 +327,7 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/true,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi, q),
+          text_rect_for_arc(center, rx, ry, lo, hi, q),
           GRect(bounds.size.w - TEXT_W - EDGE_RIGHT - INNER_TEXT_PADDING, EDGE_TOP + INDICATOR_Y_OFFSET + INNER_TEXT_PADDING, TEXT_W, TEXT_H)
         ),
         GTextAlignmentRight
@@ -307,6 +339,9 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
       draw_arc(
         ctx, 
         arc_rect, 
+        center,
+        rx,
+        ry,
         lo,
         hi, 
         text, 
@@ -314,7 +349,7 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/true,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi, q),
+          text_rect_for_arc(center, rx, ry, lo, hi, q),
           GRect(EDGE_LEFT + INNER_TEXT_PADDING, bounds.size.h - TEXT_H - EDGE_BOTTOM - INNER_TEXT_PADDING, TEXT_W, TEXT_H)
         ),
         GTextAlignmentLeft
@@ -326,6 +361,9 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
       draw_arc(
         ctx, 
         arc_rect, 
+        center,
+        rx,
+        ry,
         lo,
         hi, 
         text, 
@@ -333,7 +371,7 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
         color, 
         /*reversed=*/false,
         PBL_IF_ROUND_ELSE(
-          text_rect_for_arc(center, radius, lo, hi, q),
+          text_rect_for_arc(center, rx, ry, lo, hi, q),
           GRect(bounds.size.w - TEXT_W - EDGE_RIGHT - INNER_TEXT_PADDING,
                 bounds.size.h - TEXT_H - EDGE_BOTTOM - INNER_TEXT_PADDING, TEXT_W, TEXT_H)
         ),
@@ -347,14 +385,22 @@ static void draw_quadrant(GContext *ctx, GRect arc_rect, GRect bounds,
 }
 
 static void layer_update_proc(Layer *layer, GContext *ctx) {
-  GRect    bounds = layer_get_bounds(layer);
-  GPoint   center = grect_center_point(&bounds);
-  int      arc_w  = indicators_get_width();
-  uint16_t radius = (MIN(bounds.size.w, bounds.size.h) / 2) - (arc_w / 2) - ARC_EDGE;
-  GRect    arc_rect = GRect(center.x - radius, center.y - radius, radius * 2, radius * 2);
+  GRect   bounds   = layer_get_bounds(layer);
+  Window *win      = layer_get_window(layer);
+  int16_t full_h   = win ? layer_get_bounds(window_get_root_layer(win)).size.h : bounds.size.h;
+  GPoint  center   = grect_center_point(&bounds);
+  int     arc_w    = indicators_get_width();
+  int     inset    = (arc_w / 2) + ARC_EDGE;
+  int16_t rx       = MAX(1, (bounds.size.w / 2) - inset);
+  int16_t v_pad    = (bounds.size.h < full_h) ? ((arc_w / 2) + 2) : MAX(inset, (full_h / 2) - rx);
+  int16_t top_y    = v_pad;
+  int16_t bottom_y = MAX(top_y + 2, bounds.size.h - v_pad);
+  int16_t ry       = (bottom_y - top_y) / 2;
+  GPoint  arc_ctr  = GPoint(center.x, top_y + ry);
+  GRect   arc_rect = GRect(center.x - rx, top_y, rx * 2, bottom_y - top_y);
 
   for (int q = 0; q < QUADRANT_COUNT; q++) {
-    draw_quadrant(ctx, arc_rect, bounds, center, radius, (Quadrant)q);
+    draw_quadrant(ctx, arc_rect, bounds, arc_ctr, rx, ry, (Quadrant)q);
   }
 
   // Right triangle: Quiet time indicator (when quiet time is active and enabled)
@@ -429,7 +475,7 @@ void indicators_set(Quadrant q, const char *label, int percent, GColor color) {
 }
 
 void indicators_layer_create(Layer *root) {
-  GRect bounds = layer_get_bounds(root);
+  GRect bounds = layer_get_unobstructed_bounds(root);
   for (int q = 0; q < QUADRANT_COUNT; q++) {
     s_text[q][0] = '\0';
     s_pct[q]     = 0;
@@ -439,6 +485,13 @@ void indicators_layer_create(Layer *root) {
   s_layer = layer_create(bounds);
   layer_set_update_proc(s_layer, layer_update_proc);
   layer_add_child(root, s_layer);
+}
+
+void indicators_layer_resize(GRect bounds) {
+  if (s_layer) {
+    layer_set_frame(s_layer, bounds);
+    layer_mark_dirty(s_layer);
+  }
 }
 
 void indicators_layer_apply_theme(void) {

@@ -2,6 +2,7 @@
 #include <pebble.h>
 
 void design_layer_create(Layer *root);
+void design_layer_resize(GRect bounds);
 void design_layer_set_connected(bool connected);
 void design_layer_apply_theme(void);
 void design_layer_destroy(void);
