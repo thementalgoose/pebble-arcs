@@ -1,8 +1,6 @@
 #include <pebble.h>
 #include "weather.h"
-
-static const uint32_t PERSIST_KEY_CACHED_WEATHER_TEMPERATURE = 0xFEF1;
-static const uint32_t PERSIST_KEY_CACHED_WEATHER_CONDITION   = 0xFEF2;
+#include "constants.h"
 
 static bool s_has_temperature_data = false;
 static bool s_has_condition_data   = false;
@@ -17,13 +15,13 @@ bool weather_has_data(void) {
 void weather_set_temperature(int temp) {
   s_temperature = temp;
   s_has_temperature_data = true;
-  persist_write_int(PERSIST_KEY_CACHED_WEATHER_TEMPERATURE, temp);
+  persist_write_int(PERSIST_KEY_CACHED_WEATHER_TEMP, temp);
 }
 
 void weather_set_condition(int cond) {
   s_condition = cond;
   s_has_condition_data = true;
-  persist_write_int(PERSIST_KEY_CACHED_WEATHER_CONDITION, cond);
+  persist_write_int(PERSIST_KEY_CACHED_WEATHER_COND, cond);
 }
 
 bool weather_has_temperature_data(void) {
@@ -39,13 +37,16 @@ void weather_set_use_celsius(bool celsius) {
 }
 
 void weather_restore_cached_data(void) {
-  if (persist_exists(PERSIST_KEY_CACHED_WEATHER_TEMPERATURE)) {
-    s_temperature = persist_read_int(PERSIST_KEY_CACHED_WEATHER_TEMPERATURE);
+  if (persist_exists(PERSIST_KEY_CACHED_WEATHER_TEMP)) {
+    s_temperature = persist_read_int(PERSIST_KEY_CACHED_WEATHER_TEMP);
     s_has_temperature_data = true;
   }
-  if (persist_exists(PERSIST_KEY_CACHED_WEATHER_CONDITION)) {
-    s_condition = persist_read_int(PERSIST_KEY_CACHED_WEATHER_CONDITION);
-    s_has_condition_data = true;
+  if (persist_exists(PERSIST_KEY_CACHED_WEATHER_COND)) {
+    int cond = persist_read_int(PERSIST_KEY_CACHED_WEATHER_COND);
+    if (cond >= 0 && cond <= 7) {
+      s_condition = cond;
+      s_has_condition_data = true;
+    }
   }
 }
 

@@ -4,14 +4,9 @@
 #include "constants.h"
 #include "weather.h"
 
-static const uint32_t PERSIST_KEY_CACHED_HEART_RATE = 0xFEF0;
-
-static const uint32_t PERSIST_KEY_CACHED_PHONE_BATTERY = 0xFEF1;
 static int s_cached_heart_rate = -1;
 static int s_phone_battery = -1;
 
-static const uint32_t PERSIST_KEY_COMPLICATION_PCT   = 0xFF00;  // + slot
-static const uint32_t PERSIST_KEY_COMPLICATION_LABEL = 0xFF10;  // + slot
 static int  s_comp_pct[COMPLICATION_SLOTS + 1];
 static char s_comp_label[COMPLICATION_SLOTS + 1][8];
 
@@ -24,8 +19,8 @@ void metrics_set_complication(int slot, int percent, const char *label) {
   if (s_comp_pct[slot] == percent && strcmp(s_comp_label[slot], buf) == 0) return;
   s_comp_pct[slot] = percent;
   snprintf(s_comp_label[slot], sizeof(s_comp_label[slot]), "%s", buf);
-  persist_write_int(PERSIST_KEY_COMPLICATION_PCT + slot, percent);
-  persist_write_string(PERSIST_KEY_COMPLICATION_LABEL + slot, buf);
+  persist_write_int(PERSIST_KEY_COMPLICATION_PCT_BASE + slot, percent);
+  persist_write_string(PERSIST_KEY_COMPLICATION_LABEL_BASE + slot, buf);
 }
 
 void metrics_set_phone_battery(int percent) {
@@ -45,20 +40,21 @@ static void metrics_cache_heart_rate(int bpm) {
 void metrics_restore_cached_values(void) {
   for (int s = 1; s <= COMPLICATION_SLOTS; s++) {
     s_comp_pct[s] = COMPLICATION_UNSUPPORTED;
-    snprintf(s_comp_label[s], sizeof(s_comp_label[s]), "--");
-    if (persist_exists(PERSIST_KEY_COMPLICATION_PCT + s) &&
-        persist_exists(PERSIST_KEY_COMPLICATION_LABEL + s)) {
-      s_comp_pct[s] = persist_read_int(PERSIST_KEY_COMPLICATION_PCT + s);
-      persist_read_string(PERSIST_KEY_COMPLICATION_LABEL + s,
+    snprintf(s_comp_label[s], sizeof(s_comp_label[s]), "-");
+    if (persist_exists(PERSIST_KEY_COMPLICATION_PCT_BASE + s) &&
+        persist_exists(PERSIST_KEY_COMPLICATION_LABEL_BASE + s)) {
+      s_comp_pct[s] = persist_read_int(PERSIST_KEY_COMPLICATION_PCT_BASE + s);
+      persist_read_string(PERSIST_KEY_COMPLICATION_LABEL_BASE + s,
                           s_comp_label[s], sizeof(s_comp_label[s]));
     }
   }
   if (persist_exists(PERSIST_KEY_CACHED_PHONE_BATTERY)) {
-    s_phone_battery = persist_read_int(PERSIST_KEY_CACHED_PHONE_BATTERY);
+    int stored = persist_read_int(PERSIST_KEY_CACHED_PHONE_BATTERY);
+    s_phone_battery = (stored >= 0 && stored <= 100) ? stored : -1;
   }
   if (persist_exists(PERSIST_KEY_CACHED_HEART_RATE)) {
     int stored = persist_read_int(PERSIST_KEY_CACHED_HEART_RATE);
-    s_cached_heart_rate = stored;
+    s_cached_heart_rate = (stored > 0) ? stored : -1;
   }
 }
 
@@ -77,7 +73,7 @@ static int health_peek_current(HealthMetric metric) {
   HealthServiceAccessibilityMask mask =
     health_service_metric_accessible(metric, time(NULL), time(NULL));
   return (mask & HealthServiceAccessibilityMaskAvailable)
-    ? (int)health_service_peek_current_value(metric) : 0;
+    ? (int)health_service_peek_current_value(metric) : -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +88,7 @@ static int percent_in_range(int value, int min_val, int max_val) {
 
 MetricResult metrics_fetch(MetricOption option, int min_val, int max_val) {
   MetricResult r;
-  snprintf(r.label, sizeof(r.label), "--");
+  snprintf(r.label, sizeof(r.label), "-");
   r.percent = 0;
 
   switch (option) {
@@ -146,7 +142,7 @@ MetricResult metrics_fetch(MetricOption option, int min_val, int max_val) {
     case METRIC_COMPLICATION_4:
     case METRIC_COMPLICATION_5: {
       int slot = (int)option - METRIC_COMPLICATION_1 + 1;
-      // Before the first value arrives the label stays "--" with an empty arc
+      // Before the first value arrives the label stays "-" with an empty arc
       if (s_comp_label[slot][0] != '\0') {
         snprintf(r.label, sizeof(r.label), "%s", s_comp_label[slot]);
       }
@@ -155,13 +151,13 @@ MetricResult metrics_fetch(MetricOption option, int min_val, int max_val) {
     }
     case METRIC_HEART_RATE: {
       int bpm = health_peek_current(HealthMetricHeartRateBPM);
-      if (bpm >= 0) {
+      if (bpm > 0) {
         metrics_cache_heart_rate(bpm);
-      } else if (s_cached_heart_rate != -1) {
+      } else if (s_cached_heart_rate > 0) {
         bpm = s_cached_heart_rate;
       }
-      bool has_hr = bpm >= 0;
-      snprintf(r.label, sizeof(r.label), has_hr ? "%d" : "--", bpm);
+      bool has_hr = bpm > 0;
+      snprintf(r.label, sizeof(r.label), has_hr ? "%d" : "-", bpm);
       r.percent = has_hr ? percent_in_range(bpm, min_val, max_val) : 0;
       break;
     }
@@ -205,7 +201,7 @@ MetricResult metrics_fetch(MetricOption option, int min_val, int max_val) {
         snprintf(r.label, sizeof(r.label), "%d%s", temp, celsius ? "°C" : "°F");
         r.percent = percent_in_range(temp, min_val, max_val);
       } else {
-        snprintf(r.label, sizeof(r.label), "--");
+        snprintf(r.label, sizeof(r.label), "-");
         r.percent = 0;
       }
       break;
@@ -220,11 +216,11 @@ MetricResult metrics_fetch(MetricOption option, int min_val, int max_val) {
           snprintf(r.label, sizeof(r.label), "%s", condition_labels[cond]);
           r.percent = percent_in_range(7 - cond, min_val, max_val);
         } else {
-          snprintf(r.label, sizeof(r.label), "--");
+          snprintf(r.label, sizeof(r.label), "-");
           r.percent = 0;
         }
       } else {
-        snprintf(r.label, sizeof(r.label), "--");
+        snprintf(r.label, sizeof(r.label), "-");
         r.percent = 0;
       }
       break;

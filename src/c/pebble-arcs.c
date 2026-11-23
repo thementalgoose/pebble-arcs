@@ -103,33 +103,33 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
   // Theme
   t = dict_find(iter, MESSAGE_KEY_DarkTheme);
-  if (t) theme_apply(t->value->int32 != 0);
+  if (t) theme_apply(tuple_int(t) != 0);
 
   // Quiet time indicator (right triangle)
   t = dict_find(iter, MESSAGE_KEY_QuietTimeIndicator);
   if (t) {
-    persist_write_bool(MESSAGE_KEY_QuietTimeIndicator, t->value->int32 != 0);
+    persist_write_bool(MESSAGE_KEY_QuietTimeIndicator, tuple_int(t) != 0);
     indicators_layer_apply_theme();
   }
 
   // Disconnection indicator (left triangle)
   t = dict_find(iter, MESSAGE_KEY_DisconnectIndicator);
   if (t) {
-    persist_write_bool(MESSAGE_KEY_DisconnectIndicator, t->value->int32 != 0);
+    persist_write_bool(MESSAGE_KEY_DisconnectIndicator, tuple_int(t) != 0);
     indicators_layer_apply_theme();
   }
 
   // Outlined arc borders
   t = dict_find(iter, MESSAGE_KEY_OutlinedArcs);
   if (t) {
-    bool outlined = t->value->int32 != 0;
+    bool outlined = tuple_int(t) != 0;
     persist_write_bool(MESSAGE_KEY_OutlinedArcs, outlined);
   }
 
   // Show indicator text
   t = dict_find(iter, MESSAGE_KEY_ShowIndicatorText);
   if (t) {
-    bool show = t->value->int32 != 0;
+    bool show = tuple_int(t) != 0;
     persist_write_bool(MESSAGE_KEY_ShowIndicatorText, show);
     indicators_layer_apply_theme();
   }
@@ -195,7 +195,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   // Weather configuration from config page
   t = dict_find(iter, MESSAGE_KEY_WeatherUseCelsius);
   if (t) {
-    bool celsius = t->value->int32 != 0;
+    bool celsius = tuple_int(t) != 0;
     persist_write_bool(MESSAGE_KEY_WeatherUseCelsius, celsius);
     weather_set_use_celsius(celsius);
   }
@@ -232,10 +232,14 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
   // Animate indicator changes
   t = dict_find(iter, MESSAGE_KEY_AnimateIndicators);
-  if (t) indicators_set_animated(t->value->int32 != 0);
+  if (t) indicators_set_animated(tuple_int(t) != 0);
 
   t = dict_find(iter, MESSAGE_KEY_WeatherCondition);
-  if (t) weather_set_condition((int)t->value->int32);
+  if (t) weather_set_condition(tuple_int(t));
+
+  if (weather_should_update() && !weather_has_data()) {
+    weather_request_update();
+  }
 
   quadrants_render_all();
 }

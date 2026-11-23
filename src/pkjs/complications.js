@@ -1,7 +1,7 @@
 // Converts a plugin property (a map of shapes) into what the watch displays.
 // Shape preference: numericValue > boolean > unsupported.
 // percent: 0-100, or -1 (unsupported) / -2 (permission not allowed)
-var UNSUPPORTED = { percent: -1, label: '--' };
+var UNSUPPORTED = { percent: -1, label: '-' };
 var NO_PERMISSION = { percent: -2, label: '-' };
 var LABEL_MAX = 7;
 
@@ -14,7 +14,7 @@ var CONDITION_CODES = {
   light_snow:    { label: 'LSNW', percent: 38 },
   heavy_snow:    { label: 'HSNW', percent: 25 },
   rain_and_snow: { label: 'RSNW', percent: 13 },
-  unknown:       { label: '--',   percent: 0 }
+  unknown:       { label: '-',    percent: 0 }
 };
 
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
