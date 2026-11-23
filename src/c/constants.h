@@ -145,3 +145,16 @@ extern GColor g_color_indicator;
 #define ARC_WIDTH               DEFAULT_INDICATOR_WIDTH
 #define ARC_BORDER              3
 #define ARC_EDGE                PBL_IF_ROUND_ELSE(8,4)
+
+// ---------------------------------------------------------------------------
+// Persistent storage keys (non-MESSAGE_KEY_* cached values)
+// Centralized here so modules cannot collide on storage keys.
+// ---------------------------------------------------------------------------
+enum {
+  PERSIST_KEY_CACHED_HEART_RATE       = 0xFEF0,
+  PERSIST_KEY_CACHED_WEATHER_TEMP     = 0xFEF1,
+  PERSIST_KEY_CACHED_WEATHER_COND     = 0xFEF2,
+  PERSIST_KEY_CACHED_PHONE_BATTERY    = 0xFEF3,
+  PERSIST_KEY_COMPLICATION_PCT_BASE   = 0xFF00, // + slot (1..5 -> 0xFF01..0xFF05)
+  PERSIST_KEY_COMPLICATION_LABEL_BASE = 0xFF10, // + slot (1..5 -> 0xFF11..0xFF15)
+};

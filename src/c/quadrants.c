@@ -128,6 +128,9 @@ void quadrants_render_all(void) {
 }
 
 void quadrants_set_option(Quadrant q, int option) {
+  if (option < METRIC_WEEK || option > METRIC_COMPLICATION_5) {
+    option = k_default_options[q];
+  }
   s_options[q] = option;
   persist_write_int(option_key_for(q), option);
 }
